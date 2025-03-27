@@ -1,0 +1,8 @@
+# 프로젝트 정보
+spring:
+  application:
+    name: highticket
+
+# 프로파일 설정
+  profiles:
+    active: dev
