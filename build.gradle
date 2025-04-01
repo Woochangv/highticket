@@ -46,6 +46,10 @@ dependencies {
 	testImplementation 'org.springframework.restdocs:spring-restdocs-webtestclient'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// springdoc-openapi 2.8.6 버전 추가
+	implementation 'org.springdoc:springdoc-openapi-starter-webflux-api:2.8.6'
+
 }
 
 tasks.named('test') {
