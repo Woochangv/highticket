@@ -39,3 +39,6 @@ out/
 # 환경 파일
 .env
 .env.*
+
+# RSA 개인 키 파일
+src/main/resources/jwt/private.pem
