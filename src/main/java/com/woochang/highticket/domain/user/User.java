@@ -7,7 +7,7 @@ import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor
@@ -20,10 +20,10 @@ public class User {
 
     private String email;
     private String loginType;
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
 
-    public User(String email, String loginType, Date createdAt) {
+    public User(String email, String loginType, LocalDateTime createdAt) {
         this.email = email;
         this.loginType = loginType;
         this.createdAt = createdAt;
