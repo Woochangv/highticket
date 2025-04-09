@@ -50,3 +50,8 @@ logging:
     org.hibernate.type: trace
     org.springframework.security: debug
 
+# JWT 설정
+jwt:
+  access-token-expiry-ms: 3600000     # 1시간
+  refresh-token-expiry-ms: 604800000  # 7일
+
