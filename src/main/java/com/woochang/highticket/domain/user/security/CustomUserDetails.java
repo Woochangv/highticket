@@ -19,12 +19,12 @@ public class CustomUserDetails implements UserDetails {
     }
 
     @Override
-    public String getPassword() {
-        return user.getEmail();
+    public String getUsername() {
+        return user.getId().toString();
     }
 
     @Override
-    public String getUsername() {
+    public String getPassword() {
         return ""; // OAuth 기반이라 패스워드 필요 없음
     }
 
