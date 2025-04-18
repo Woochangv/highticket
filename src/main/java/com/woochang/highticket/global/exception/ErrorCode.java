@@ -12,6 +12,8 @@ public enum ErrorCode {
 
     AUTHENTICATION_FAILED(401, "AUTHENTICATION_FAILED", "인증에 실패했습니다."),
     REQUIRED_PERMISSION(401, "REQUIRED_PERMISSION", "권한이 필요합니다."),
+    INVALID_TOKEN(401, "INVALID_TOKEN", "유효하지 않은 토큰입니다."),
+    REFRESH_TOKEN_EXPIRED(401, "REFRESH_TOKEN_EXPIRED", "Refresh Token이 만료되어 재인증이 필요합니다."),
 
     NOT_FOUND(404, "NOT_FOUND", "리소스를 찾을 수 없습니다."),
 

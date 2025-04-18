@@ -11,4 +11,5 @@ public class JwtProperties {
 
     private final long accessTokenExpiryMs;
     private final long refreshTokenExpiryMs;
+    private final long refreshTokenRenewThresholdMs;
 }
