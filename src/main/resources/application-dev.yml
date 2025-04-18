@@ -52,6 +52,7 @@ logging:
 
 # JWT 설정
 jwt:
-  access-token-expiry-ms: 3600000     # 1시간
-  refresh-token-expiry-ms: 604800000  # 7일
+  access-token-expiry-ms: 3600000             # 1시간
+  refresh-token-expiry-ms: 604800000          # 7일
+  refresh-token-renew-threshold-ms: 86400000  # 1일
 
