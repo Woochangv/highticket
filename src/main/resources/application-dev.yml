@@ -1,0 +1,58 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  # 데이터베이스 설정
+  datasource:
+    url: jdbc:postgresql://localhost:5432/highticket
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: ${GOOGLE_REDIRECT_URI}
+            authorization-grant-type: authorization_code
+            scope:
+              - profile
+              - email
+
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            redirect-uri: ${KAKAO_REDIRECT_URI}
+            authorization-grant-type: authorization_code
+            scope:
+              - profile_nickname
+              - profile_image
+            client-authentication-method: client_secret_post
+
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+# 로그 설정
+logging:
+  level:
+    root: warn
+    org.hibernate.sql: debug
+    org.hibernate.type: trace
+    org.springframework.security: debug
+
+# JWT 설정
+jwt:
+  access-token-expiry-ms: 3600000             # 1시간
+  refresh-token-expiry-ms: 604800000          # 7일
+  refresh-token-renew-threshold-ms: 86400000  # 1일
+

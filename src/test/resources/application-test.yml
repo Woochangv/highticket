@@ -1,0 +1,16 @@
+# DB
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password:
+  data:
+    redis:
+      host: localhost
+      port: 6381
+
+# JWT 설정
+jwt:
+  access-token-expiry-ms: 10000                 # 10초
+  refresh-token-expiry-ms: 60000                # 1분
+  refresh-token-renew-threshold-ms: 120000      # 2분

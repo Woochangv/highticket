@@ -46,6 +46,25 @@ dependencies {
 	testImplementation 'org.springframework.restdocs:spring-restdocs-webtestclient'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// springdoc-openapi 2.8.6 버전 추가
+	implementation 'org.springdoc:springdoc-openapi-starter-webflux-api:2.8.6'
+
+	// OAuth2 Client
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	// JJWT
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+	// 테스트를 위한 H2 DB
+	testImplementation 'com.h2database:h2'
+
+	// Servlet API
+	compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0'
+
+
 }
 
 tasks.named('test') {

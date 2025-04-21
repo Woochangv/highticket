@@ -1,0 +1,29 @@
+# 프로젝트 이름
+name: highticket
+
+services:
+  postgres:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB} # 초기 데이터베이스 이름 정의
+      POSTGRES_USER: ${POSTGRES_USER} # superuser 계정의 이름
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD} # 필수
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+  redis-test:
+    image: redis:7
+    ports:
+      - "6381:6379"
+
+volumes:
+  postgres-data:
+
+
+
+
