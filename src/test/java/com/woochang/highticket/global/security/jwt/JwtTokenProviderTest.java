@@ -1,50 +1,68 @@
 package com.woochang.highticket.global.security.jwt;
 
+import com.woochang.highticket.OAuth2TestConfig;
+import com.woochang.highticket.domain.user.LoginType;
 import com.woochang.highticket.domain.user.User;
-import com.woochang.highticket.domain.user.security.CustomUserDetails;
+import com.woochang.highticket.domain.user.security.CustomOAuth2User;
+import com.woochang.highticket.global.security.oauth2.OAuth2Attribute;
 import com.woochang.highticket.repository.user.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
 @ActiveProfiles("test")
-public class JwtTokenProviderTest {
+@Import(OAuth2TestConfig.class)
+class JwtTokenProviderTest {
 
     @Autowired
-    JwtTokenProvider jwtTokenProvider;
+    private JwtTokenProvider jwtTokenProvider;
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
+
+    private Authentication auth;
+    private User savedUser;
+
+    @BeforeEach
+    public void setUp() {
+        User user = User.ofOAuth2("test@example.com", "test", LoginType.GOOGLE);
+
+        savedUser = userRepository.save(user);
+
+        Map<String, Object> attributes = Map.of(
+                "email", "test@example.com",
+                "name", "test"
+        );
+        OAuth2Attribute oAuth2Attribute = OAuth2Attribute.of("google", attributes);
+
+        CustomOAuth2User customOAuth2User = new CustomOAuth2User(savedUser, oAuth2Attribute.toMap());
+        auth = new OAuth2AuthenticationToken(customOAuth2User, customOAuth2User.getAuthorities(), "google");
+    }
 
     @Test
     @DisplayName("AccessToken이 정상적으로 생성되는지 확인")
     public void createAccessToken_success() {
-        // given
-        String email = "test@example.com";
-        String loginType = "GOOGLE";
-        LocalDateTime createAt = LocalDateTime.now();
-        User user = new User(email, loginType, createAt);
-        userRepository.save(user);
-        CustomUserDetails userDetails = new CustomUserDetails(user);
-        Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        // given -> init
 
         // when
         String accessToken = jwtTokenProvider.createAccessToken(auth);
@@ -52,22 +70,16 @@ public class JwtTokenProviderTest {
         // then
         assertNotNull(accessToken);
         Claims claims = jwtTokenProvider.parseClaims(accessToken);
-        assertEquals(user.getId().toString(), claims.getSubject());
-        assertEquals(user.getEmail(), claims.get("email", String.class));
+        assertEquals(savedUser.getUserIdString(), claims.getSubject());
+        assertEquals(savedUser.getEmail(), claims.get("email", String.class));
+        assertEquals(savedUser.getNickname(), claims.get("name", String.class));
+        assertEquals(savedUser.getRole().toString(), claims.get("role", String.class));
     }
 
     @Test
     @DisplayName("RefreshToken이 정상적으로 생성되는지 확인")
     public void createRefreshToken_success () {
-        // given
-        String email = "test@example.com";
-        String loginType = "GOOGLE";
-        LocalDateTime createAt = LocalDateTime.now();
-        User user = new User(email, loginType, createAt);
-        userRepository.save(user);
-
-        CustomUserDetails userDetails = new CustomUserDetails(user);
-        Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        // given -> init
 
         // when
         String refreshToken = jwtTokenProvider.createRefreshToken(auth);
@@ -75,7 +87,7 @@ public class JwtTokenProviderTest {
         // then
         assertNotNull(refreshToken);
         Claims claims = jwtTokenProvider.parseClaims(refreshToken);
-        assertEquals(user.getId().toString(), claims.getSubject());
+        assertEquals(savedUser.getUserIdString(), claims.getSubject());
     }
     
     @Test
@@ -103,16 +115,7 @@ public class JwtTokenProviderTest {
     @Test
     @DisplayName("위조된 Payload의 토큰은 false를 반환해야 한다")
     public void validateToken_forgedPayload () {
-        // given 
-        String email = "test@example.com";
-        String loginType = "GOOGLE";
-        LocalDateTime createAt = LocalDateTime.now();
-        User user = new User(email, loginType, createAt);
-        userRepository.save(user);
-
-        CustomUserDetails userDetails = new CustomUserDetails(user);
-        Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
+        // given
         String originalJwt = jwtTokenProvider.createAccessToken(auth);
 
         // 토큰 분해
@@ -122,7 +125,7 @@ public class JwtTokenProviderTest {
 
         // payload 디코딩 -> 조작 -> 다시 인코딩
         String decodedPayload = new String(Base64.getUrlDecoder().decode(payload));
-        String forgedPayload = decodedPayload.replace(user.getEmail(), "forgedEmail@example.com");
+        String forgedPayload = decodedPayload.replace(savedUser.getEmail(), "forgedEmail@example.com");
         String reEncodedPayload = Base64.getUrlEncoder().withoutPadding().encodeToString(forgedPayload.getBytes());
 
 
@@ -138,7 +141,7 @@ public class JwtTokenProviderTest {
 
     @Test
     @DisplayName("만료된 Access Token은 false를 반환해야 한다")
-    public void validateToken_expiredAccessToken() throws InterruptedException {
+    public void validateToken_expiredAccessToken() {
         // given
         String expiredAccessToken = jwtTokenProvider.createExpiredAccessToken("1");
 
