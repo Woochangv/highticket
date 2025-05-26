@@ -31,8 +31,8 @@ spring:
             redirect-uri: ${KAKAO_REDIRECT_URI}
             authorization-grant-type: authorization_code
             scope:
+              - account_email
               - profile_nickname
-              - profile_image
             client-authentication-method: client_secret_post
 
         provider:
@@ -42,10 +42,21 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
 
+# JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        use_sql_comments: true
+    show-sql: true
+
 # 로그 설정
 logging:
   level:
-    root: warn
+    root: info
     org.hibernate.sql: debug
     org.hibernate.type: trace
     org.springframework.security: debug
@@ -55,4 +66,3 @@ jwt:
   access-token-expiry-ms: 3600000             # 1시간
   refresh-token-expiry-ms: 604800000          # 7일
   refresh-token-renew-threshold-ms: 86400000  # 1일
-
