@@ -1,17 +1,17 @@
 package com.woochang.highticket.global.security.jwt;
 
 import com.woochang.highticket.domain.user.User;
-import com.woochang.highticket.domain.user.security.CustomUserDetails;
+import com.woochang.highticket.domain.user.security.CustomOAuth2User;
 import com.woochang.highticket.global.config.JwtProperties;
 import com.woochang.highticket.global.util.PemUtils;
+import com.woochang.highticket.service.user.CustomOAuth2UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Component;
 
 import java.security.PrivateKey;
@@ -23,17 +23,21 @@ import java.util.Date;
 public class JwtTokenProvider {
 
     private final long accessTokenExpiryMs;
+
+    @Getter
     private final long refreshTokenExpiryMs;
+    @Getter
     private final long refreshTokenRenewThresholdMs;
-    private final UserDetailsService userDetailsService;
+
+    private final CustomOAuth2UserService customOAuth2UserService;
     private PrivateKey privateKey;
     private PublicKey publicKey;
 
-    public JwtTokenProvider(JwtProperties jwtProperties, UserDetailsService userDetailsService) {
+    public JwtTokenProvider(JwtProperties jwtProperties, CustomOAuth2UserService customOAuth2UserService) {
         this.accessTokenExpiryMs = jwtProperties.getAccessTokenExpiryMs();
         this.refreshTokenExpiryMs = jwtProperties.getRefreshTokenExpiryMs();
         this.refreshTokenRenewThresholdMs = jwtProperties.getRefreshTokenRenewThresholdMs();
-        this.userDetailsService = userDetailsService;
+        this.customOAuth2UserService = customOAuth2UserService;
     }
 
     @PostConstruct
@@ -47,14 +51,14 @@ public class JwtTokenProvider {
         String userId = auth.getName();
         Date now = new Date();
         Date expiry = new Date(now.getTime() + accessTokenExpiryMs);
-        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        CustomOAuth2User userDetails = (CustomOAuth2User) auth.getPrincipal();
         User user = userDetails.getUser();
 
         return Jwts.builder()
                 .subject(userId)
                 .claim("email",user.getEmail())
-//                .claim("name", user.getName()) // TODO: OAuth 사용자 정보에서 이름 또는 별명을 받을 수 있음 -> 추후 필드 확장 고려
-//                .claim("role", user.getRole()) // TODO: Role도 사용자 도메인에 정의 X -> 추후 확장 고려
+                .claim("name", user.getNickname())
+                .claim("role", user.getRole())
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(privateKey)
@@ -78,9 +82,9 @@ public class JwtTokenProvider {
     // 토큰에서 Authentication 객체 생성
     public Authentication getAuthentication(String jwt) {
         String userId = parseClaims(jwt).getSubject();
-        UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
+        CustomOAuth2User customOAuth2User = customOAuth2UserService.loadByUserId(userId);
 
-        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        return new OAuth2AuthenticationToken(customOAuth2User, customOAuth2User.getAuthorities(), customOAuth2User.getAttribute("loginType"));
 
     }
 
@@ -106,14 +110,6 @@ public class JwtTokenProvider {
     // 토큰 만료 시각 추출
     public Date getExpiration(String jwt) {
         return parseClaims(jwt).getExpiration();
-    }
-
-    public long getRefreshTokenExpiryMs() {
-        return refreshTokenExpiryMs;
-    }
-
-    public long getRefreshTokenRenewThresholdMs() {
-        return refreshTokenRenewThresholdMs;
     }
 
     // Access Token 남은 만료 시간

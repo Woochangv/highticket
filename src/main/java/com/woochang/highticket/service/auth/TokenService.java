@@ -1,14 +1,14 @@
 package com.woochang.highticket.service.auth;
 
+import com.woochang.highticket.domain.user.security.CustomOAuth2User;
 import com.woochang.highticket.dto.auth.TokenDto;
 import com.woochang.highticket.global.exception.ErrorCode;
 import com.woochang.highticket.global.exception.InvalidTokenException;
 import com.woochang.highticket.global.security.jwt.JwtTokenProvider;
+import com.woochang.highticket.service.user.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,8 +17,9 @@ public class TokenService {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisService redisService;
-    private final UserDetailsService userDetailsService;
+    private final CustomOAuth2UserService customOAuth2UserService;
 
+    // Access/Refresh 토큰 발급
     public TokenDto issueToken(Authentication auth) {
         String userId = auth.getName();
         String accessToken = jwtTokenProvider.createAccessToken(auth);
@@ -28,6 +29,7 @@ public class TokenService {
         return new TokenDto(accessToken, refreshToken);
     }
 
+    //
     public TokenDto reissueToken(String refreshToken) {
 
         if (!jwtTokenProvider.validateToken(refreshToken)) {
@@ -41,8 +43,8 @@ public class TokenService {
             throw new InvalidTokenException(ErrorCode.REFRESH_TOKEN_EXPIRED);
         }
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
-        Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        CustomOAuth2User customOAuth2User = customOAuth2UserService.loadByUserId(userId);
+        Authentication auth = new OAuth2AuthenticationToken(customOAuth2User, customOAuth2User.getAuthorities(), customOAuth2User.getAttribute("loginType"));
         String newAccessToken = jwtTokenProvider.createAccessToken(auth);
 
         long ttl = redisService.getTTL(userId);

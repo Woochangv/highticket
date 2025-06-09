@@ -1,12 +1,12 @@
 package com.woochang.highticket.global.config;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "jwt")
 @Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class JwtProperties {
 
     private final long accessTokenExpiryMs;

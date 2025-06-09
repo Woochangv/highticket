@@ -25,7 +25,5 @@ public class JwtAuthenticationEntryPoint implements ServerAuthenticationEntryPoi
         DataBuffer buffer = response.bufferFactory().wrap(bytes);
 
         return response.writeWith(Mono.just(buffer));
-
-
     }
 }

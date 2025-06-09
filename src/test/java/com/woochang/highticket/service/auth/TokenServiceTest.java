@@ -1,35 +1,35 @@
 package com.woochang.highticket.service.auth;
 
+import com.woochang.highticket.OAuth2TestConfig;
+import com.woochang.highticket.domain.user.LoginType;
 import com.woochang.highticket.domain.user.User;
-import com.woochang.highticket.domain.user.security.CustomUserDetails;
+import com.woochang.highticket.domain.user.security.CustomOAuth2User;
 import com.woochang.highticket.dto.auth.TokenDto;
 import com.woochang.highticket.global.exception.ErrorCode;
 import com.woochang.highticket.global.exception.InvalidTokenException;
 import com.woochang.highticket.global.security.jwt.JwtTokenProvider;
 import com.woochang.highticket.repository.user.UserRepository;
-import io.jsonwebtoken.Claims;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.core.Authentication;
-import org.springframework.test.annotation.Rollback;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
 @ActiveProfiles("test")
-public class TokenServiceTest {
+@Import(OAuth2TestConfig.class)
+class TokenServiceTest {
 
     @Autowired
     TokenService tokenService;
@@ -37,28 +37,25 @@ public class TokenServiceTest {
     RedisService redisService;
     @Autowired
     UserRepository userRepository;
-    private User user;
-    private User savedUser;
-    private CustomUserDetails userDetails;
-    private Authentication auth;
     @Autowired
-    private JwtTokenProvider jwtTokenProvider;
+    JwtTokenProvider jwtTokenProvider;
+
+    User savedUser;
+    Authentication auth;
+
 
     @BeforeEach
-    public void init() {
-        String email = "test@example.com";
-        String loginType = "GOOGLE";
-        LocalDateTime createAt = LocalDateTime.now();
-        user = new User(email, loginType, createAt);
+    public void setUp() {
+        User user = User.ofOAuth2("test@example.com", "test", LoginType.GOOGLE);
         savedUser = userRepository.save(user);
-        CustomUserDetails userDetails = new CustomUserDetails(user);
-        auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        CustomOAuth2User oAuth2User = new CustomOAuth2User(savedUser, Map.of());
+        auth = new OAuth2AuthenticationToken(oAuth2User, oAuth2User.getAuthorities(), "google");
     }
 
     @Test
-    @DisplayName("토큰 발급")
+    @DisplayName("Access/Refresh 토큰 정상 발급")
     public void issueToken() {
-        // given -> init
+        // given -> setUp
 
         // when
         TokenDto dto = tokenService.issueToken(auth);
@@ -66,7 +63,7 @@ public class TokenServiceTest {
         // then
         assertNotNull(dto.getAccessToken());
         assertNotNull(dto.getRefreshToken());
-        String savedRedisRefreshToken = redisService.getRefreshToken(savedUser.getId().toString());
+        String savedRedisRefreshToken = redisService.getRefreshToken(savedUser.getUserIdString());
         assertEquals(dto.getRefreshToken(), savedRedisRefreshToken);
     }
 
@@ -75,7 +72,7 @@ public class TokenServiceTest {
     public void reissueToken_success() {
         // given
         String refreshToken = jwtTokenProvider.createRefreshToken(auth);
-        redisService.saveRefreshToken(savedUser.getId().toString(), refreshToken, jwtTokenProvider.getRefreshTokenExpiryMs());
+        redisService.saveRefreshToken(savedUser.getUserIdString(), refreshToken, jwtTokenProvider.getRefreshTokenExpiryMs());
 
         // when
         TokenDto dto = tokenService.reissueToken(refreshToken);
@@ -91,7 +88,7 @@ public class TokenServiceTest {
     public void reissueToken_refreshToken() throws InterruptedException {
         // given
         String oldRefreshToken = jwtTokenProvider.createRefreshToken(auth);
-        redisService.saveRefreshToken(savedUser.getId().toString(), oldRefreshToken, jwtTokenProvider.getRefreshTokenExpiryMs());
+        redisService.saveRefreshToken(savedUser.getUserIdString(), oldRefreshToken, jwtTokenProvider.getRefreshTokenExpiryMs());
         Thread.sleep(1000); // 오래된 리프레쉬 토큰이므로 1초후 로직들이 진행되게 함 (처리 속도가 빠르므로 같은 토큰으로 인식하는 문제 해결을 위함)
 
         // when
@@ -129,14 +126,14 @@ public class TokenServiceTest {
     public void logout_tokenCannotBeUsed() {
         // given
         TokenDto dto = tokenService.issueToken(auth);
-        String storedRefreshToken = redisService.getRefreshToken(savedUser.getId().toString());
+        String storedRefreshToken = redisService.getRefreshToken(savedUser.getUserIdString());
         assertThat(storedRefreshToken).isEqualTo(dto.getRefreshToken());
 
         // when
-        tokenService.logout(savedUser.getId().toString(), dto.getAccessToken());
+        tokenService.logout(savedUser.getUserIdString(), dto.getAccessToken());
 
         // then
-        assertNull(redisService.getRefreshToken(savedUser.getId().toString()));
+        assertNull(redisService.getRefreshToken(savedUser.getUserIdString()));
         assertInvalidTokenException(() -> tokenService.reissueToken(dto.getRefreshToken()), ErrorCode.REFRESH_TOKEN_EXPIRED);
     }
 

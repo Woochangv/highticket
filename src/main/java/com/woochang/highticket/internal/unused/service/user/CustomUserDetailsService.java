@@ -1,16 +1,15 @@
-package com.woochang.highticket.service.user;
+package com.woochang.highticket.internal.unused.service.user;
 
 import com.woochang.highticket.domain.user.User;
-import com.woochang.highticket.domain.user.security.CustomUserDetails;
+import com.woochang.highticket.internal.unused.domain.user.security.CustomUserDetails;
 import com.woochang.highticket.repository.user.UserRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Service;
 
-@Service
-@AllArgsConstructor
+//@Service
+@RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
@@ -25,3 +24,4 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new CustomUserDetails(user);
     }
 }
+
