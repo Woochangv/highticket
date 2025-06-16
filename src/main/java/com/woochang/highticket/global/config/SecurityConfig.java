@@ -30,11 +30,6 @@ public class SecurityConfig {
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Bean
-    public OAuth2UserService<OAuth2UserRequest, OAuth2User> delegateOAuth2UserService() {
-        return new DefaultOAuth2UserService();
-    }
-
-    @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable) // Basic Auth 비활성화
