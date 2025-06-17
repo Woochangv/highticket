@@ -33,14 +33,14 @@ public class TokenService {
     public TokenDto reissueToken(String refreshToken) {
 
         if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new InvalidTokenException(ErrorCode.INVALID_TOKEN);
+            throw new InvalidTokenException(ErrorCode.AUTH_INVALID_TOKEN);
         }
 
         String userId = jwtTokenProvider.getUserId(refreshToken);
         String storedToken = redisService.getRefreshToken(userId);
 
         if (!refreshToken.equals(storedToken)) {
-            throw new InvalidTokenException(ErrorCode.REFRESH_TOKEN_EXPIRED);
+            throw new InvalidTokenException(ErrorCode.AUTH_REFRESH_TOKEN_EXPIRED);
         }
 
         CustomOAuth2User customOAuth2User = customOAuth2UserService.loadByUserId(userId);
