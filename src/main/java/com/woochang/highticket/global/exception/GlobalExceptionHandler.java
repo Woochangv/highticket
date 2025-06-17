@@ -24,10 +24,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<?>> handleException(Exception e) {
         log.error("예상하지 못한 오류 발생: ", e);
         return ResponseEntity
-                .status(ErrorCode.INTERNAL_SERVER_ERROR.getStatus())
+                .status(ErrorCode.GLOBAL_INTERNAL_SERVER_ERROR.getStatus())
                 .body(ApiResponse.error(
-                        ErrorCode.INTERNAL_SERVER_ERROR.getCode(),
-                        ErrorCode.INTERNAL_SERVER_ERROR.getMessage()
+                        ErrorCode.GLOBAL_INTERNAL_SERVER_ERROR.getCode(),
+                        ErrorCode.GLOBAL_INTERNAL_SERVER_ERROR.getMessage()
                 ));
     }
 }
