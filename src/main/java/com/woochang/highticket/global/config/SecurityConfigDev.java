@@ -11,28 +11,18 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 @Configuration
 @EnableWebFluxSecurity
-@Profile("!dev")
+@Profile("dev")
 @RequiredArgsConstructor
-public class SecurityConfig {
-
+public class SecurityConfigDev {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
-
-    @Bean
-    public OAuth2UserService<OAuth2UserRequest, OAuth2User> delegateOAuth2UserService() {
-        return new DefaultOAuth2UserService();
-    }
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
@@ -43,7 +33,13 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable) // CSRF 보호 비활성화
                 .authorizeExchange(exchanges -> {
                     exchanges
-                            .pathMatchers("/", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/login/oauth2/**", "/oauth2/authorization/**").permitAll()
+                            .pathMatchers("/",
+                                    "/v3/api-docs/**",
+                                    "/swagger-ui.html",
+                                    "/swagger-ui/**",
+                                    "/login/oauth2/**",
+                                    "/oauth2/authorization/**",
+                                    "/venues/**").permitAll()
                             .anyExchange().denyAll();
                 })
                 .oauth2Login(spec -> spec
