@@ -17,6 +17,7 @@ public enum ErrorCode {
     AUTH_REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH_REFRESH_TOKEN_EXPIRED", "Refresh Token이 만료되어 재인증이 필요합니다."),
 
     COMMON_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON_NOT_FOUND", "리소스를 찾을 수 없습니다."),
+    VENUE_NOT_FOUND(HttpStatus.NOT_FOUND, "VENUE_NOT_FOUND", "해당 ID에 해당하는 행사장을 찾을 수 없습니다."),
 
     // 5xx 서버 오류
     GLOBAL_INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "GLOBAL_INTERNAL_SERVER_ERROR", "서버 오류 입니다.");
