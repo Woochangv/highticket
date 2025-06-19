@@ -107,7 +107,7 @@ class TokenServiceTest {
         String fakeToken = "invalidRefreshToken";
 
         // when & then
-        assertInvalidTokenException(() -> tokenService.reissueToken(fakeToken), ErrorCode.INVALID_TOKEN);
+        assertInvalidTokenException(() -> tokenService.reissueToken(fakeToken), ErrorCode.AUTH_INVALID_TOKEN);
     }
 
 
@@ -118,7 +118,7 @@ class TokenServiceTest {
         String refreshToken = jwtTokenProvider.createRefreshToken(auth);
 
         // when & then
-        assertInvalidTokenException(() -> tokenService.reissueToken(refreshToken), ErrorCode.REFRESH_TOKEN_EXPIRED);
+        assertInvalidTokenException(() -> tokenService.reissueToken(refreshToken), ErrorCode.AUTH_REFRESH_TOKEN_EXPIRED);
     }
 
     @Test
@@ -134,7 +134,7 @@ class TokenServiceTest {
 
         // then
         assertNull(redisService.getRefreshToken(savedUser.getUserIdString()));
-        assertInvalidTokenException(() -> tokenService.reissueToken(dto.getRefreshToken()), ErrorCode.REFRESH_TOKEN_EXPIRED);
+        assertInvalidTokenException(() -> tokenService.reissueToken(dto.getRefreshToken()), ErrorCode.AUTH_REFRESH_TOKEN_EXPIRED);
     }
 
     // InvalidTokenException 헬퍼 메서드
