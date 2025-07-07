@@ -39,7 +39,9 @@ public class SecurityConfigDev {
                                     "/swagger-ui/**",
                                     "/login/oauth2/**",
                                     "/oauth2/authorization/**",
-                                    "/venues/**").permitAll()
+                                    "/venues/**",
+                                    "/performances"
+                                    ).permitAll()
                             .anyExchange().denyAll();
                 })
                 .oauth2Login(spec -> spec
