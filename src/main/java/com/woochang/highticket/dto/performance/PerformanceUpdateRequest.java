@@ -21,11 +21,4 @@ public class PerformanceUpdateRequest {
 
     private LocalDate endDate;
 
-    public PerformanceUpdateRequest(String title, String description, PerformanceCategory category, LocalDate startDate, LocalDate endDate) {
-        this.title = title;
-        this.description = description;
-        this.category = category;
-        this.startDate = startDate;
-        this.endDate = endDate;
-    }
 }

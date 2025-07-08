@@ -1,6 +1,5 @@
 package com.woochang.highticket.dto.performance;
 
-import com.woochang.highticket.domain.performnace.PerformanceCategory;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -13,25 +12,18 @@ import java.time.LocalDate;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PerformanceCreateRequest {
 
-    @NotBlank
+    @NotBlank(message = "제목은 필수입니다.")
     private String title;
 
     private String description;
 
-    @NotNull
-    private PerformanceCategory category;
+    @NotBlank (message = "카테고리는 필수입니다.")
+    private String category;
 
-    @NotNull
+    @NotNull(message = "공연 시작일은 필수입니다.")
     private LocalDate startDate;
 
-    @NotNull
+    @NotNull(message = "공연 종료일은 필수입니다.")
     private LocalDate endDate;
 
-    public PerformanceCreateRequest(String title, String description, PerformanceCategory category, LocalDate startDate, LocalDate endDate) {
-        this.title = title;
-        this.description = description;
-        this.category = category;
-        this.startDate = startDate;
-        this.endDate = endDate;
-    }
 }

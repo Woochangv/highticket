@@ -2,9 +2,14 @@ package com.woochang.highticket.global.exception;
 
 import com.woochang.highticket.global.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.server.ServerWebInputException;
+
+import java.util.Objects;
 
 @RestControllerAdvice
 @Slf4j
@@ -29,5 +34,35 @@ public class GlobalExceptionHandler {
                         ErrorCode.GLOBAL_INTERNAL_SERVER_ERROR.getCode(),
                         ErrorCode.GLOBAL_INTERNAL_SERVER_ERROR.getMessage()
                 ));
+    }
+
+    //
+    @ExceptionHandler(ServerWebInputException.class)
+    public ResponseEntity<ApiResponse<?>> handleServerWebInputException() {
+        return ResponseEntity
+                .status(ErrorCode.INVALID_JSON_REQUEST.getStatus())
+                .body(
+                        ApiResponse.error(
+                                ErrorCode.INVALID_JSON_REQUEST.getCode(),
+                                ErrorCode.INVALID_JSON_REQUEST.getMessage()
+                        ));
+    }
+
+    @ExceptionHandler(WebExchangeBindException.class)
+    public ResponseEntity<ApiResponse<?>> handleWebExchangeBindException(WebExchangeBindException e) {
+        String message = e.getBindingResult()
+                .getAllErrors()
+                .stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(ErrorCode.COMMON_VALIDATION_FAILED.getMessage());
+
+
+        return ResponseEntity
+                .status(ErrorCode.COMMON_VALIDATION_FAILED.getStatus())
+                .body(
+                        ApiResponse.error(ErrorCode.COMMON_VALIDATION_FAILED.getCode(), message)
+                );
     }
 }

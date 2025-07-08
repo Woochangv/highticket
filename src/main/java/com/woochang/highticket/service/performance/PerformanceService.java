@@ -9,6 +9,7 @@ import com.woochang.highticket.mapper.performance.PerformanceMapper;
 import com.woochang.highticket.repository.performance.PerformanceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,9 +26,10 @@ public class PerformanceService {
         return performanceRepository.findById(id).orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_NOT_FOUND));
     }
 
+    @Transactional
     public Performance updatePerformance(Long id, PerformanceUpdateRequest dto) {
         Performance performance = findPerformance(id);
-        performanceMapper.updateFromDto(dto, performance);
+        performance.updateWith(dto);
         return performance;
     }
 
