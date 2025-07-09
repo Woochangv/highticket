@@ -1,7 +1,6 @@
 package com.woochang.highticket.domain.performnace;
 
 import com.woochang.highticket.domain.BaseTimeEntity;
-import com.woochang.highticket.dto.performance.PerformanceUpdateRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -44,11 +43,11 @@ public class Performance extends BaseTimeEntity {
         this.endDate = endDate;
     }
 
-    public void updateWith(PerformanceUpdateRequest request) {
-        if (request.getTitle() != null) this.title = request.getTitle();
-        if (request.getDescription() != null) this.description = request.getDescription();
-        if (request.getCategory() != null) this.category = request.getCategory();
-        if (request.getStartDate() != null) this.startDate = request.getStartDate();
-        if (request.getEndDate() != null) this.endDate = request.getEndDate();
+    public void updateWith(String title, String description, PerformanceCategory category, LocalDate startDate, LocalDate endDate) {
+        this.title = title;
+        this.description = description;
+        this.category = category;
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 }
