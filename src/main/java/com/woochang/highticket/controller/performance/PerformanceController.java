@@ -1,7 +1,6 @@
 package com.woochang.highticket.controller.performance;
 
 import com.woochang.highticket.domain.performnace.Performance;
-import com.woochang.highticket.domain.performnace.PerformanceCategory;
 import com.woochang.highticket.dto.performance.PerformanceCreateRequest;
 import com.woochang.highticket.dto.performance.PerformanceResponse;
 import com.woochang.highticket.dto.performance.PerformanceUpdateRequest;

@@ -16,6 +16,6 @@ public enum PerformanceCategory {
         return Arrays.stream(values())
                 .filter(e -> e.name().equalsIgnoreCase(value))
                 .findFirst()
-                .orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_CATEGORY_BAD_REQUEST));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_CATEGORY_NOT_EXISTS));
     }
 }

@@ -20,7 +20,8 @@ public enum ErrorCode {
     VENUE_NOT_FOUND(HttpStatus.NOT_FOUND, "VENUE_NOT_FOUND", "해당 ID에 해당하는 행사장을 찾을 수 없습니다."),
     // PERFORMANCE 관련
     PERFORMANCE_NOT_FOUND(HttpStatus.NOT_FOUND, "PERFORMANCE_NOT_FOUND", "해당 ID에 해당하는 공연을 찾을 수 없습니다."),
-    PERFORMANCE_CATEGORY_BAD_REQUEST(HttpStatus.BAD_REQUEST, "PERFORMANCE_CATEGORY_BAD_REQUEST", "카테고리가 올바르지 않습니다."),
+    PERFORMANCE_CATEGORY_NOT_EXISTS(HttpStatus.BAD_REQUEST, "PERFORMANCE_CATEGORY_NOT_EXISTS", "존재하지 않는 카테고리입니다."),
+
     // JSON 관련
     INVALID_JSON_REQUEST(HttpStatus.BAD_REQUEST, "INVALID_JSON_REQUEST", "잘못된 요청입니다."),
 
