@@ -56,7 +56,7 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .subject(userId)
-                .claim("email",user.getEmail())
+                .claim("email", user.getEmail())
                 .claim("name", user.getNickname())
                 .claim("role", user.getRole())
                 .issuedAt(now)
@@ -102,6 +102,7 @@ public class JwtTokenProvider {
             return false;
         }
     }
+
     // 토큰에서 사용자 ID 추출
     public String getUserId(String jwt) {
         return parseClaims(jwt).getSubject();
@@ -132,31 +133,5 @@ public class JwtTokenProvider {
                 .build()
                 .parseSignedClaims(jwt)
                 .getPayload();
-    }
-
-    // Access Token 만료 테스트 전용 메서드
-    public String createExpiredAccessToken(String subject) {
-        Date now = new Date();
-        Date expiry = new Date(now.getTime() - 1000); // 만료
-
-        return Jwts.builder()
-                .subject(subject)
-                .issuedAt(now)
-                .expiration(expiry)
-                .signWith(privateKey)
-                .compact();
-    }
-
-    // Refresh Token 만료 테스트 전용 메서드
-    public String createExpiredRefreshToken(String subject) {
-        Date now = new Date();
-        Date expiry = new Date(now.getTime() - 1000); // 만료
-
-        return Jwts.builder()
-                .subject(subject)
-                .issuedAt(now)
-                .expiration(expiry)
-                .signWith(privateKey)
-                .compact();
     }
 }
