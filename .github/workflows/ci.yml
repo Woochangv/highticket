@@ -20,6 +20,11 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: JWT 키 복원
+        run: |
+          mkdir -p src/main/resources/jwt
+          echo "${{ secrets.JWT_PRIVATE_KEY }}" > src/main/resources/jwt/private.pem
+
       - name: Gradle 실행 권한 부여
         run: chmod +x gradlew
 
