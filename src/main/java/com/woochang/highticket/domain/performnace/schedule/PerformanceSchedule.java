@@ -34,4 +34,12 @@ public class PerformanceSchedule extends BaseTimeEntity {
         this.ticketLimit = ticketLimit;
         this.status = status;
     }
+
+    public void updateWith(LocalDateTime startDatetime, LocalDateTime ticketOpenAt, int ticketLimit, PerformanceScheduleStatus status) {
+        this.startDatetime = startDatetime;
+        this.ticketOpenAt = ticketOpenAt;
+        this.ticketLimit = ticketLimit;
+        this.status = status;
+    }
+
 }
