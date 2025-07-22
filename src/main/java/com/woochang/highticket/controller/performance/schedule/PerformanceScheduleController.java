@@ -7,13 +7,9 @@ import com.woochang.highticket.service.performance.schedule.PerformanceScheduleS
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import static com.woochang.highticket.dto.performance.schedule.PerformanceScheduleDto.Create;
-import static com.woochang.highticket.dto.performance.schedule.PerformanceScheduleDto.Response;
+import static com.woochang.highticket.dto.performance.schedule.PerformanceScheduleDto.*;
 
 @RestController
 @RequestMapping("/performance-schedules")
@@ -28,5 +24,25 @@ public class PerformanceScheduleController {
         PerformanceSchedule schedule = scheduleService.createSchedule(request);
         Response response = scheduleMapper.toResponse(schedule);
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<Response>> getSchedule(@PathVariable Long id) {
+        PerformanceSchedule schedule = scheduleService.getSchedule(id);
+        Response response = scheduleMapper.toResponse(schedule);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ApiResponse<Response>> update(@PathVariable Long id, @RequestBody @Valid Update request) {
+        PerformanceSchedule schedule = scheduleService.updateSchedule(id, request);
+        Response response = scheduleMapper.toResponse(schedule);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+        scheduleService.deleteSchedule(id);
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 }

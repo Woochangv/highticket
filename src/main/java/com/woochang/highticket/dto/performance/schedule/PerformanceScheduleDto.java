@@ -49,7 +49,11 @@ public class PerformanceScheduleDto {
         private Integer ticketLimit;
 
         @Size(max = 10, message = "공연 일정 상태는 최대 10자 이하로 입력해야 합니다.")
-        private PerformanceScheduleStatus status;
+        private String status;
+
+        public boolean isAllFieldNull() {
+            return startDatetime == null && ticketOpenAt == null && ticketLimit == null && status == null;
+        }
     }
 
     @Getter

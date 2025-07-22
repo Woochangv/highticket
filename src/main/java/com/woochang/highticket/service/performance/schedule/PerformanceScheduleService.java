@@ -41,6 +41,10 @@ public class PerformanceScheduleService {
 
     @Transactional
     public PerformanceSchedule updateSchedule(Long id, Update request) {
+        if (request.isAllFieldNull()) {
+            throw new BusinessException(ErrorCode.PERFORMANCE_SCHEDULE_UPDATE_REQUEST_INVALID);
+        }
+
         PerformanceSchedule schedule = getSchedule(id);
 
         LocalDateTime startDatetime = schedule.getStartDatetime();
@@ -51,7 +55,7 @@ public class PerformanceScheduleService {
         if (request.getStartDatetime() != null) startDatetime = request.getStartDatetime();
         if (request.getTicketOpenAt() != null) ticketOpenAt = request.getTicketOpenAt();
         if (request.getTicketLimit() != null) ticketLimit = request.getTicketLimit();
-        if (request.getStatus() != null) status = request.getStatus();
+        if (request.getStatus() != null) status = scheduleMapper.toScheduleStatus(request.getStatus());
 
         schedule.updateWith(startDatetime, ticketOpenAt, ticketLimit, status);
         return schedule;
