@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import static com.woochang.highticket.global.response.SuccessCode.*;
+
 @RestController
 @RequestMapping("/performances")
 @RequiredArgsConstructor
@@ -27,7 +29,9 @@ public class PerformanceController {
         return Mono.fromCallable(() -> {
             Performance performance = performanceService.createPerformance(request);
             PerformanceResponse response = performanceMapper.toResponse(performance);
-            return ResponseEntity.ok(ApiResponse.success(response));
+            return ResponseEntity
+                    .status(PERFORMANCE_CREATED.getStatus())
+                    .body(ApiResponse.success(PERFORMANCE_CREATED, response));
         });
     }
 
@@ -36,7 +40,9 @@ public class PerformanceController {
         return Mono.fromCallable(() -> {
             Performance performance = performanceService.findPerformance(id);
             PerformanceResponse response = performanceMapper.toResponse(performance);
-            return ResponseEntity.ok(ApiResponse.success(response));
+            return ResponseEntity
+                    .status(OK.getStatus())
+                    .body(ApiResponse.success(OK, response));
         });
     }
 
@@ -45,7 +51,9 @@ public class PerformanceController {
         return Mono.fromCallable(() -> {
                     Performance performance = performanceService.updatePerformance(id, request);
                     PerformanceResponse response = performanceMapper.toResponse(performance);
-                    return ResponseEntity.ok(ApiResponse.success(response));
+                    return ResponseEntity
+                            .status(PERFORMANCE_UPDATED.getStatus())
+                            .body(ApiResponse.success(PERFORMANCE_UPDATED, response));
                 })
                 .subscribeOn(Schedulers.boundedElastic());
     }
@@ -54,7 +62,9 @@ public class PerformanceController {
     public Mono<ResponseEntity<ApiResponse<Void>>> deletePerformance(@PathVariable Long id) {
         return Mono.fromCallable(() -> {
             performanceService.deletePerformance(id);
-            return ResponseEntity.ok(ApiResponse.success(null));
+            return ResponseEntity
+                    .status(PERFORMANCE_DELETED.getStatus())
+                    .body(ApiResponse.success(PERFORMANCE_DELETED));
         });
     }
 }

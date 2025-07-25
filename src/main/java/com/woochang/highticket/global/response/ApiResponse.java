@@ -1,9 +1,13 @@
 package com.woochang.highticket.global.response;
 
+import com.woochang.highticket.global.exception.ErrorCode;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ApiResponse<T> {
 
     private boolean success;
@@ -19,25 +23,36 @@ public class ApiResponse<T> {
         this.data = data;
     }
 
-    protected ApiResponse(){}
+    public static ApiResponse<Void> success(SuccessCode successCode) {
+        return ApiResponse.<Void>builder()
+                .success(true)
+                .code(successCode.getCode())
+                .message(successCode.getMessage())
+                .build();
+    }
 
-    // 성공 응답
-    public static <T> ApiResponse<T> success(T data) {
+    public static <T> ApiResponse<T> success(SuccessCode successCode, T data) {
         return ApiResponse.<T>builder()
                 .success(true)
-                .code("200")
-                .message("요청이 성공했습니다.")
+                .code(successCode.getCode())
+                .message(successCode.getMessage())
                 .data(data)
                 .build();
     }
 
-    // 실패 응답
-    public static <T> ApiResponse<T> error(String code, String message) {
+    public static <T> ApiResponse<T> error(ErrorCode errorCode) {
         return ApiResponse.<T>builder()
                 .success(false)
-                .code(code)
+                .code(errorCode.getCode())
+                .message(errorCode.getMessage())
+                .build();
+    }
+
+    public static <T> ApiResponse<T> error(ErrorCode errorCode, String message) {
+        return ApiResponse.<T>builder()
+                .success(false)
+                .code(errorCode.getCode())
                 .message(message)
-                .data(null)
                 .build();
     }
 }
