@@ -18,10 +18,9 @@ public class GlobalExceptionHandler {
     // 서비스 로직 예외 처리
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<?>> handleBusinessException(BusinessException e) {
-        ErrorCode errorCode = e.getErrorCode();
         return ResponseEntity
-                .status(errorCode.getStatus())
-                .body(ApiResponse.error(errorCode.getCode(), errorCode.getMessage()));
+                .status(e.getErrorCode().getStatus())
+                .body(ApiResponse.error(e.getErrorCode()));
     }
 
     // 예기치 못한 예외 처리
@@ -30,10 +29,7 @@ public class GlobalExceptionHandler {
         log.error("예상하지 못한 오류 발생: ", e);
         return ResponseEntity
                 .status(ErrorCode.GLOBAL_INTERNAL_SERVER_ERROR.getStatus())
-                .body(ApiResponse.error(
-                        ErrorCode.GLOBAL_INTERNAL_SERVER_ERROR.getCode(),
-                        ErrorCode.GLOBAL_INTERNAL_SERVER_ERROR.getMessage()
-                ));
+                .body(ApiResponse.error(ErrorCode.GLOBAL_INTERNAL_SERVER_ERROR));
     }
 
     //
@@ -41,11 +37,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<?>> handleServerWebInputException() {
         return ResponseEntity
                 .status(ErrorCode.INVALID_JSON_REQUEST.getStatus())
-                .body(
-                        ApiResponse.error(
-                                ErrorCode.INVALID_JSON_REQUEST.getCode(),
-                                ErrorCode.INVALID_JSON_REQUEST.getMessage()
-                        ));
+                .body(ApiResponse.error(ErrorCode.INVALID_JSON_REQUEST));
     }
 
     @ExceptionHandler(WebExchangeBindException.class)
@@ -61,8 +53,6 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(ErrorCode.COMMON_VALIDATION_FAILED.getStatus())
-                .body(
-                        ApiResponse.error(ErrorCode.COMMON_VALIDATION_FAILED.getCode(), message)
-                );
+                .body(ApiResponse.error(ErrorCode.COMMON_VALIDATION_FAILED, message));
     }
 }

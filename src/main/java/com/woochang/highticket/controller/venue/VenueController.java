@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.woochang.highticket.global.response.SuccessCode.*;
+
 @RestController
 @RequestMapping("/venues")
 @RequiredArgsConstructor
@@ -22,30 +24,40 @@ public class VenueController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<Venue>>> getAllVenues() {
         List<Venue> venues = venueService.findAll();
-        return ResponseEntity.ok(ApiResponse.success(venues));
+        return ResponseEntity
+                .status(OK.getStatus())
+                .body(ApiResponse.success(OK, venues));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Venue>> getVenue(@PathVariable Long id) {
         Venue venue = venueService.findVenue(id);
-        return ResponseEntity.ok(ApiResponse.success(venue));
+        return ResponseEntity
+                .status(OK.getStatus())
+                .body(ApiResponse.success(OK, venue));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<Void>> createVenue(@RequestBody @Valid VenueCreateRequest request) {
         venueService.createVenue(request);
-        return ResponseEntity.ok(ApiResponse.success(null));
+        return ResponseEntity
+                .status(VENUE_CREATED.getStatus())
+                .body(ApiResponse.success(VENUE_CREATED));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> updateVenue(@PathVariable Long id, @RequestBody @Valid VenueUpdateRequest request) {
         venueService.updateVenue(id, request);
-        return ResponseEntity.ok(ApiResponse.success(null));
+        return ResponseEntity
+                .status(VENUE_UPDATED.getStatus())
+                .body(ApiResponse.success(VENUE_UPDATED));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteVenue(@PathVariable Long id) {
         venueService.deleteVenue(id);
-        return ResponseEntity.ok(ApiResponse.success(null));
+        return ResponseEntity
+                .status(VENUE_DELETED.getStatus())
+                .body(ApiResponse.success(VENUE_DELETED));
     }
 }
