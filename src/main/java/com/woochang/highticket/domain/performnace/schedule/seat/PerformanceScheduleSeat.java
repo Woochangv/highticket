@@ -29,4 +29,18 @@ public class PerformanceScheduleSeat extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SeatStatus status;
+
+    public PerformanceScheduleSeat(String seatCode, SeatGrade grade, int price, SeatStatus status) {
+        this.seatCode = seatCode;
+        this.grade = grade;
+        this.price = price;
+        this.status = status;
+    }
+
+    public void updateWith(String seatCode, SeatGrade grade, int price, SeatStatus status) {
+        this.seatCode = seatCode;
+        this.grade = grade;
+        this.price = price;
+        this.status = status;
+    }
 }

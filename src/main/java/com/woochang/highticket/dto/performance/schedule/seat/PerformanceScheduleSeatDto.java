@@ -12,7 +12,7 @@ public class PerformanceScheduleSeatDto {
 
     @Getter
     @Setter
-    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    @NoArgsConstructor
     public static class Create {
         @NotNull(message = "좌석 문자열은 필수입니다.")
         private String seatCode;
@@ -31,7 +31,7 @@ public class PerformanceScheduleSeatDto {
 
     @Getter
     @Setter
-    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    @NoArgsConstructor
     public static class Update {
         private String seatCode;
 
@@ -43,14 +43,14 @@ public class PerformanceScheduleSeatDto {
         @Size(max = 10, message = "좌석 상태는 최대 10자 이하로 입력해야 합니다.")
         private String status;
 
-        public boolean isAllFieldNull() {
+        public boolean isAllFieldsNull() {
             return seatCode == null && grade == null && price == null && status == null;
         }
     }
 
     @Getter
     @Setter
-    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    @NoArgsConstructor
     public static class Response {
         private Long id;
 
