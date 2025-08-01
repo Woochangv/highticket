@@ -41,7 +41,8 @@ public class SecurityConfigDev {
                                     "/oauth2/authorization/**",
                                     "/venues/**",
                                     "/performances/**",
-                                    "/performance-schedules/**"
+                                    "/performance-schedules/**",
+                                    "/performance-schedule-seats/**"
                                     ).permitAll()
                             .anyExchange().denyAll();
                 })

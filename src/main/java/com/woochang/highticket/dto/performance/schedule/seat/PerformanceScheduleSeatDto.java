@@ -1,6 +1,7 @@
 package com.woochang.highticket.dto.performance.schedule.seat;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -22,7 +23,8 @@ public class PerformanceScheduleSeatDto {
         private String grade;
 
         @NotNull(message = "좌석 가격은 필수입니다.")
-        private int price;
+        @Positive
+        private Integer price;
 
         @NotNull(message = "좌석 상태는 필수입니다.")
         @Size(max = 10, message = "좌석 상태는 최대 10자 이하로 입력해야 합니다.")
@@ -38,6 +40,7 @@ public class PerformanceScheduleSeatDto {
         @Size(max = 5, message = "좌석 등급은 최대 5자 이하로 입력해야 합니다.")
         private String grade;
 
+        @Positive
         private Integer price;
 
         @Size(max = 10, message = "좌석 상태는 최대 10자 이하로 입력해야 합니다.")
