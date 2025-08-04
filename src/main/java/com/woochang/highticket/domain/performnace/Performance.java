@@ -3,7 +3,6 @@ package com.woochang.highticket.domain.performnace;
 import com.woochang.highticket.domain.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -19,22 +18,22 @@ public class Performance extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 50)
+    @Column(length = 50, nullable = false)
     private String title;
 
+    @Column
     private String description;
 
-    @Column(length = 20)
+    @Column(length = 20, nullable = false)
     @Enumerated(EnumType.STRING)
     private PerformanceCategory category;
 
-    @Column(name = "start_date")
+    @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
 
-    @Column(name = "end_date")
+    @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
-    @Builder
     public Performance(String title, String description, PerformanceCategory category, LocalDate startDate, LocalDate endDate) {
         this.title = title;
         this.description = description;
