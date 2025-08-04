@@ -21,9 +21,14 @@ public enum SuccessCode {
     VENUE_DELETED(HttpStatus.NO_CONTENT, "VENUE_DELETED", "공연장이 삭제되었습니다."),
 
     // 공연 일정
-    PERFORMANCE_SCHEDULE_CREATED(HttpStatus.CREATED, "PERFORMANCE_CREATED", "공연 일정이 생성되었습니다."),
-    PERFORMANCE_SCHEDULE_UPDATED(HttpStatus.OK, "PERFORMANCE_CREATED", "공연 일정이 수정되었습니다."),
-    PERFORMANCE_SCHEDULE_DELETED(HttpStatus.NO_CONTENT, "PERFORMANCE_CREATED", "공연 일정이 삭제되었습니다.");
+    PERFORMANCE_SCHEDULE_CREATED(HttpStatus.CREATED, "PERFORMANCE_SCHEDULE_CREATED", "공연 일정이 생성되었습니다."),
+    PERFORMANCE_SCHEDULE_UPDATED(HttpStatus.OK, "PERFORMANCE_SCHEDULE_UPDATED", "공연 일정이 수정되었습니다."),
+    PERFORMANCE_SCHEDULE_DELETED(HttpStatus.NO_CONTENT, "PERFORMANCE_SCHEDULE_DELETED", "공연 일정이 삭제되었습니다."),
+
+    // 공연 일정별 좌석
+    PERFORMANCE_SCHEDULE_SEAT_CREATED(HttpStatus.CREATED, "PERFORMANCE_SCHEDULE_SEAT_CREATED", "공연 일정 좌석이 생성되었습니다."),
+    PERFORMANCE_SCHEDULE_SEAT_UPDATED(HttpStatus.OK, "PERFORMANCE_SCHEDULE_SEAT_UPDATED", "공연 일정 좌석이 수정되었습니다."),
+    PERFORMANCE_SCHEDULE_SEAT_DELETED(HttpStatus.NO_CONTENT, "PERFORMANCE_SCHEDULE_SEAT_DELETED", "공연 일정 좌석이 삭제되었습니다.");
 
     private final HttpStatus status;
     private final String code;
