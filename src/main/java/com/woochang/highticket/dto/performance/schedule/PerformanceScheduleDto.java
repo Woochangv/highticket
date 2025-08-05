@@ -32,7 +32,7 @@ public class PerformanceScheduleDto {
         private Integer ticketLimit;
 
         @NotNull(message = "공연 일정 상태는 필수입니다.")
-        @Size(max = 10, message = "공연 일정 상태는 최대 10자 이하로 입력해야 합니다.")
+        @Size(max = 10, message = "공연 일정 상태는 최대 10자 이하여야 합니다.")
         private String status;
     }
 
@@ -48,10 +48,10 @@ public class PerformanceScheduleDto {
 
         private Integer ticketLimit;
 
-        @Size(max = 10, message = "공연 일정 상태는 최대 10자 이하로 입력해야 합니다.")
+        @Size(max = 10, message = "공연 일정 상태는 최대 10자 이하여야 합니다.")
         private String status;
 
-        public boolean isAllFieldNull() {
+        public boolean isAllFieldsNull() {
             return startDatetime == null && ticketOpenAt == null && ticketLimit == null && status == null;
         }
     }

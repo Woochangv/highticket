@@ -3,7 +3,6 @@ package com.woochang.highticket.service.performance.schedule;
 import com.woochang.highticket.domain.performnace.schedule.PerformanceSchedule;
 import com.woochang.highticket.domain.performnace.schedule.PerformanceScheduleStatus;
 import com.woochang.highticket.global.exception.BusinessException;
-import com.woochang.highticket.global.exception.ErrorCode;
 import com.woochang.highticket.mapper.performance.schedule.PerformanceScheduleMapper;
 import com.woochang.highticket.repository.performance.schedule.PerformanceScheduleRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +13,7 @@ import java.time.LocalDateTime;
 
 import static com.woochang.highticket.dto.performance.schedule.PerformanceScheduleDto.Create;
 import static com.woochang.highticket.dto.performance.schedule.PerformanceScheduleDto.Update;
+import static com.woochang.highticket.global.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +28,7 @@ public class PerformanceScheduleService {
         PerformanceSchedule schedule = scheduleMapper.toEntity(request);
 
         if (!schedule.getStartDatetime().isAfter(schedule.getTicketOpenAt())) {
-            throw new BusinessException(ErrorCode.PERFORMANCE_SCHEDULE_DATETIME_INVALID);
+            throw new BusinessException(PERFORMANCE_SCHEDULE_DATETIME_INVALID);
         }
 
         return scheduleRepository.save(schedule);
@@ -36,26 +36,23 @@ public class PerformanceScheduleService {
 
     public PerformanceSchedule getSchedule(Long id) {
         return scheduleRepository.findById(id).orElseThrow(() ->
-                new BusinessException(ErrorCode.PERFORMANCE_SCHEDULE_NOT_FOUND));
+                new BusinessException(PERFORMANCE_SCHEDULE_NOT_FOUND));
     }
 
     @Transactional
     public PerformanceSchedule updateSchedule(Long id, Update request) {
-        if (request.isAllFieldNull()) {
-            throw new BusinessException(ErrorCode.PERFORMANCE_SCHEDULE_UPDATE_REQUEST_INVALID);
+        if (request.isAllFieldsNull()) {
+            throw new BusinessException(PERFORMANCE_SCHEDULE_UPDATE_REQUEST_INVALID);
         }
 
         PerformanceSchedule schedule = getSchedule(id);
 
-        LocalDateTime startDatetime = schedule.getStartDatetime();
-        LocalDateTime ticketOpenAt = schedule.getTicketOpenAt();
-        int ticketLimit = schedule.getTicketLimit();
-        PerformanceScheduleStatus status = schedule.getStatus();
-
-        if (request.getStartDatetime() != null) startDatetime = request.getStartDatetime();
-        if (request.getTicketOpenAt() != null) ticketOpenAt = request.getTicketOpenAt();
-        if (request.getTicketLimit() != null) ticketLimit = request.getTicketLimit();
-        if (request.getStatus() != null) status = scheduleMapper.toScheduleStatus(request.getStatus());
+        LocalDateTime startDatetime = resolveValue(request.getStartDatetime(), schedule.getStartDatetime());
+        LocalDateTime ticketOpenAt = resolveValue(request.getTicketOpenAt(), schedule.getTicketOpenAt());
+        int ticketLimit = resolveValue(request.getTicketLimit(), schedule.getTicketLimit());
+        PerformanceScheduleStatus status = request.getStatus() != null
+                ? scheduleMapper.toScheduleStatus(request.getStatus())
+                : schedule.getStatus();
 
         schedule.updateWith(startDatetime, ticketOpenAt, ticketLimit, status);
         return schedule;
@@ -64,5 +61,9 @@ public class PerformanceScheduleService {
     @Transactional
     public void deleteSchedule(Long id) {
         scheduleRepository.deleteById(id);
+    }
+
+    private <T> T resolveValue(T newValue, T currentValue) {
+        return newValue != null ? newValue : currentValue;
     }
 }

@@ -2,6 +2,7 @@ package com.woochang.highticket.controller.performance.schedule;
 
 import com.woochang.highticket.domain.performnace.schedule.PerformanceSchedule;
 import com.woochang.highticket.global.response.ApiResponse;
+import com.woochang.highticket.global.response.SuccessCode;
 import com.woochang.highticket.mapper.performance.schedule.PerformanceScheduleMapper;
 import com.woochang.highticket.service.performance.schedule.PerformanceScheduleService;
 import jakarta.validation.Valid;
@@ -24,27 +25,21 @@ public class PerformanceScheduleController {
     public ResponseEntity<ApiResponse<Response>> create(@RequestBody @Valid Create request) {
         PerformanceSchedule schedule = scheduleService.createSchedule(request);
         Response response = scheduleMapper.toResponse(schedule);
-        return ResponseEntity
-                .status(PERFORMANCE_SCHEDULE_CREATED.getStatus())
-                .body(ApiResponse.success(PERFORMANCE_SCHEDULE_CREATED, response));
+        return buildResponse(PERFORMANCE_SCHEDULE_CREATED, response);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Response>> getSchedule(@PathVariable Long id) {
         PerformanceSchedule schedule = scheduleService.getSchedule(id);
         Response response = scheduleMapper.toResponse(schedule);
-        return ResponseEntity
-                .status(OK.getStatus())
-                .body(ApiResponse.success(OK, response));
+        return buildResponse(OK, response);
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<Response>> update(@PathVariable Long id, @RequestBody @Valid Update request) {
         PerformanceSchedule schedule = scheduleService.updateSchedule(id, request);
         Response response = scheduleMapper.toResponse(schedule);
-        return ResponseEntity
-                .status(PERFORMANCE_SCHEDULE_UPDATED.getStatus())
-                .body(ApiResponse.success(PERFORMANCE_SCHEDULE_UPDATED, response));
+        return buildResponse(PERFORMANCE_SCHEDULE_UPDATED, response);
     }
 
     @DeleteMapping("/{id}")
@@ -53,5 +48,10 @@ public class PerformanceScheduleController {
         return ResponseEntity
                 .status(PERFORMANCE_SCHEDULE_DELETED.getStatus())
                 .body(ApiResponse.success(PERFORMANCE_SCHEDULE_DELETED));
+    }
+
+    private ResponseEntity<ApiResponse<Response>> buildResponse(SuccessCode successCode, Response response) {
+        return ResponseEntity.status(successCode.getStatus())
+                .body(ApiResponse.success(successCode, response));
     }
 }
