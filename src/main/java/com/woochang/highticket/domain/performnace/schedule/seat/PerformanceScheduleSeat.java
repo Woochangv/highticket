@@ -2,6 +2,7 @@ package com.woochang.highticket.domain.performnace.schedule.seat;
 
 import com.woochang.highticket.domain.BaseTimeEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Positive;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,18 +17,18 @@ public class PerformanceScheduleSeat extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 10, nullable = false)
+    @Column(name = "seat_code", length = 10, nullable = false)
     private String seatCode;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 5)
     private SeatGrade grade;
 
     @Column(nullable = false)
     private int price;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 10)
     private SeatStatus status;
 
     public PerformanceScheduleSeat(String seatCode, SeatGrade grade, int price, SeatStatus status) {
