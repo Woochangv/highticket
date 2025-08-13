@@ -8,22 +8,26 @@ import com.woochang.highticket.repository.performance.PerformanceRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static com.woochang.highticket.domain.performnace.PerformanceCategory.CONCERT;
+import static com.woochang.highticket.domain.performnace.PerformanceCategory.MUSICAL;
 import static com.woochang.highticket.dto.performance.PerformanceDto.Create;
 import static com.woochang.highticket.global.exception.ErrorCode.*;
+import static com.woochang.highticket.support.BusinessExceptionAssertions.assertBusinessError;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PerformanceServiceTest {
@@ -41,21 +45,20 @@ class PerformanceServiceTest {
     @Mock
     private PerformanceMapper performanceMapper;
 
+    private static Stream<String> invalidValues() {
+        return Stream.of("INVALID", null);
+    }
+
     @Test
     @DisplayName("공연이 정상적으로 생성된다")
     public void create_success() {
         // given
-        Create request = new Create();
-        request.setTitle(TITLE);
-        request.setDescription(DESCRIPTION);
-        request.setCategory(CATEGORY);
-        request.setStartDate(START_DATE);
-        request.setEndDate(END_DATE);
+        Create request = baseCreate();
 
         Performance performance = new Performance(
                 request.getTitle(), request.getDescription(),
                 CONCERT, request.getStartDate(), request.getEndDate()
-                );
+        );
 
         when(performanceMapper.toEntity(request)).thenReturn(performance);
         when(performanceRepository.save(performance)).thenReturn(performance);
@@ -77,10 +80,7 @@ class PerformanceServiceTest {
     @DisplayName("공연 생성 시 공연 시작일이 종료일보다 늦으면 예외가 발생한다")
     public void create_invalidDate_throwsException() {
         // given
-        Create request = new Create();
-        request.setTitle(TITLE);
-        request.setDescription(DESCRIPTION);
-        request.setCategory(CATEGORY);
+        Create request = baseCreate();
         request.setStartDate(LocalDate.of(2025, 8, 1));
         request.setEndDate(LocalDate.of(2025, 7, 1));
 
@@ -92,60 +92,39 @@ class PerformanceServiceTest {
         when(performanceMapper.toEntity(request)).thenReturn(performance);
 
         // when & then
-        assertThatThrownBy(() -> performanceService.createPerformance(request))
-                .isInstanceOf(BusinessException.class)
-                .hasMessage(PERFORMANCE_DATE_INVALID.getMessage());
+        assertBusinessError(
+                () -> performanceService.createPerformance(request),
+                PERFORMANCE_DATE_INVALID
+        );
+        verify(performanceRepository, never()).save(any());
     }
 
-    @Test
-    @DisplayName("공연 생성 시 유효하지 않은 category 값이 들어오면 예외가 발생한다")
-    public void create_invalidCategoryValue_throwsException() {
+    @ParameterizedTest(name = "[{index}] category={0} -> INVALID_ENUM_VALUE")
+    @DisplayName("공연 생성 시 유효하지 않은 category 값('INVALID', null)이 주어지면 예외가 발생한다")
+    @MethodSource("invalidValues")
+    public void create_rejects_invalidCategory(String category) {
         // given
-        Create request = new Create();
-        request.setTitle(TITLE);
-        request.setDescription(DESCRIPTION);
-        request.setCategory("INVALID");
-        request.setStartDate(START_DATE);
-        request.setEndDate(END_DATE);
+        Create request = baseCreate();
+        request.setCategory(category);
 
-        when(performanceMapper.toEntity(argThat(req -> "INVALID".equals(req.getCategory()))))
+        when(performanceMapper.toEntity(argThat(req -> Objects.equals(req.getCategory(), category))))
                 .thenThrow(new BusinessException(INVALID_ENUM_VALUE));
 
         // when & then
-        assertThatThrownBy(() -> performanceService.createPerformance(request))
-                .isInstanceOf(BusinessException.class)
-                .hasMessage(INVALID_ENUM_VALUE.getMessage());
+        assertBusinessError(
+                () -> performanceService.createPerformance(request),
+                INVALID_ENUM_VALUE
+        );
+        verify(performanceRepository, never()).save(any());
     }
 
-    @Test
-    @DisplayName("공연 생성 시 category 값이 null이면 예외가 발생한다")
-    public void create_nullCategory_throwsException() {
-        // given
-        Create request = new Create();
-        request.setTitle(TITLE);
-        request.setDescription(DESCRIPTION);
-        request.setCategory(null);
-        request.setStartDate(START_DATE);
-        request.setEndDate(END_DATE);
-
-        when(performanceMapper.toEntity(argThat(req -> (req.getCategory()) == null)))
-                .thenThrow(new BusinessException(INVALID_ENUM_VALUE));
-
-        // when & then
-        assertThatThrownBy(() -> performanceService.createPerformance(request))
-                .isInstanceOf(BusinessException.class)
-                .hasMessage(INVALID_ENUM_VALUE.getMessage());
-    }
-    
     @Test
     @DisplayName("존재하는 ID로 공연을 조회하면 공연이 반환된다")
     public void getPerformance_success() {
         // given 
         Long id = 1L;
 
-        Performance performance = new Performance(
-                TITLE, DESCRIPTION,
-                CONCERT, START_DATE, END_DATE);
+        Performance performance = basePerformance();
 
         when(performanceRepository.findById(id)).thenReturn(Optional.of(performance));
 
@@ -170,9 +149,10 @@ class PerformanceServiceTest {
         when(performanceRepository.findById(id)).thenReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> performanceService.getPerformance(id))
-                .isInstanceOf(BusinessException.class)
-                .hasMessage(PERFORMANCE_NOT_FOUND.getMessage());
+        assertBusinessError(
+                () -> performanceService.getPerformance(id),
+                PERFORMANCE_NOT_FOUND
+        );
         verify(performanceRepository).findById(id);
     }
 
@@ -186,9 +166,7 @@ class PerformanceServiceTest {
         request.setDescription("수정된 설명");
         request.setCategory(null);
 
-        Performance performance = new Performance(
-                TITLE, DESCRIPTION,
-                CONCERT, START_DATE, END_DATE);
+        Performance performance = basePerformance();
 
         when(performanceRepository.findById(id)).thenReturn(Optional.of(performance));
 
@@ -212,11 +190,13 @@ class PerformanceServiceTest {
         Update request = new Update();
 
         // when & then
-        assertThatThrownBy(() -> performanceService.updatePerformance(id, request))
-                .isInstanceOf(BusinessException.class)
-                .hasMessage(PERFORMANCE_UPDATE_REQUEST_INVALID.getMessage());
+        assertBusinessError(
+                () -> performanceService.updatePerformance(id, request),
+                PERFORMANCE_UPDATE_REQUEST_INVALID
+        );
+        verify(performanceRepository, never()).findById(any());
     }
-    
+
     @Test
     @DisplayName("공연 수정 시 제목이 공백이면 예외가 발생한다")
     public void updatePerformance_blankTitle_throwsException() {
@@ -227,9 +207,11 @@ class PerformanceServiceTest {
         request.setTitle("");
 
         // when & then
-        assertThatThrownBy(() -> performanceService.updatePerformance(id, request))
-                .isInstanceOf(BusinessException.class)
-                .hasMessage(PERFORMANCE_TITLE_BLANK.getMessage());
+        assertBusinessError(
+                () -> performanceService.updatePerformance(id, request),
+                PERFORMANCE_TITLE_BLANK
+        );
+        verify(performanceRepository, never()).findById(any());
     }
 
     @Test
@@ -241,37 +223,81 @@ class PerformanceServiceTest {
         Update request = new Update();
         request.setStartDate(LocalDate.of(2025, 9, 1));
 
-        Performance performance = new Performance(
-                TITLE, DESCRIPTION,
-                CONCERT, START_DATE, END_DATE);
+        Performance performance = basePerformance();
 
         when(performanceRepository.findById(id)).thenReturn(Optional.of(performance));
 
         // when & then
-        assertThatThrownBy(() -> performanceService.updatePerformance(id, request))
-                .isInstanceOf(BusinessException.class)
-                .hasMessage(PERFORMANCE_DATE_INVALID.getMessage());
+        assertBusinessError(
+                () -> performanceService.updatePerformance(id, request),
+                PERFORMANCE_DATE_INVALID
+        );
+        verify(performanceRepository).findById(id);
     }
-    
+
     @Test
-    @DisplayName("공연 수정 시 유효하지 않은 category 값이 들어오면 예외가 발생한다")
+    @DisplayName("공연 수정 시 유효하지 않은 category 값('INVALID')이 주어지면 예외가 발생한다")
     public void update_invalidCategoryValue_throwsException() {
         // given
         Long id = 1L;
         Update request = new Update();
         request.setCategory("INVALID");
 
-        Performance performance = new Performance(
-                TITLE, DESCRIPTION,
-                CONCERT, START_DATE, END_DATE);
+        Performance performance = basePerformance();
 
         when(performanceRepository.findById(id)).thenReturn(Optional.of(performance));
         when(performanceMapper.toCategory("INVALID")).thenThrow(new BusinessException(INVALID_ENUM_VALUE));
 
         // when & then
-        assertThatThrownBy(() -> performanceService.updatePerformance(id, request))
-                .isInstanceOf(BusinessException.class)
-                .hasMessage(INVALID_ENUM_VALUE.getMessage());
+        assertBusinessError(
+                () -> performanceService.updatePerformance(id, request),
+                INVALID_ENUM_VALUE
+        );
+        verify(performanceRepository).findById(id);
+        verify(performanceMapper).toCategory("INVALID");
+    }
+
+    @Test
+    @DisplayName("공연 수정 시 category가 null이면 매퍼 변환이 호출되지 않는다")
+    public void update_nullCategory_doesNotCallMapper() {
+        // given
+        Long id = 1L;
+        Update request = new Update();
+        request.setTitle("수정 제목");
+        request.setCategory(null);
+
+        Performance performance = basePerformance();
+
+        when(performanceRepository.findById(id)).thenReturn(Optional.of(performance));
+
+        // when
+        performanceService.updatePerformance(id, request);
+
+        // then
+        verify(performanceRepository).findById(id);
+        verify(performanceMapper, never()).toCategory(any());
+    }
+
+    @Test
+    @DisplayName("공연 수정 시 category가 주어지면 매퍼 변환이 한 번 호출된다")
+    public void update_category_callsMapperOnce() {
+        // given
+        Long id = 1L;
+        Update request = new Update();
+        request.setTitle("수정 제목");
+        request.setCategory("MUSICAL");
+
+        Performance performance = basePerformance();
+
+        when(performanceRepository.findById(id)).thenReturn(Optional.of(performance));
+        when(performanceMapper.toCategory("MUSICAL")).thenReturn(MUSICAL);
+
+        // when
+        performanceService.updatePerformance(id, request);
+
+        // then
+        verify(performanceRepository).findById(id);
+        verify(performanceMapper, times(1)).toCategory("MUSICAL");
     }
 
     @Test
@@ -285,5 +311,20 @@ class PerformanceServiceTest {
 
         // then
         verify(performanceRepository).deleteById(id);
+    }
+
+    private Create baseCreate() {
+        Create request = new Create();
+        request.setTitle(TITLE);
+        request.setDescription(DESCRIPTION);
+        request.setCategory(CATEGORY);
+        request.setStartDate(START_DATE);
+        request.setEndDate(END_DATE);
+
+        return request;
+    }
+
+    private Performance basePerformance() {
+        return new Performance(TITLE, DESCRIPTION, CONCERT, START_DATE, END_DATE);
     }
 }
