@@ -1,0 +1,79 @@
+package com.woochang.highticket.dto.performance;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.woochang.highticket.domain.performnace.PerformanceCategory;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDate;
+
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class PerformanceDto {
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class Create {
+        @NotBlank(message = "제목은 필수입니다.")
+        @Size(max = 50, message = "제목은 최대 50자 이하여야 합니다.")
+        private String title;
+
+        @Size(max = 255, message = "설명은 최대 255자 이하여야 합니다.")
+        private String description;
+
+        @NotBlank(message = "카테고리는 필수입니다.")
+        private String category;
+
+        @NotNull(message = "공연 시작일은 필수입니다.")
+        private LocalDate startDate;
+
+        @NotNull(message = "공연 종료일은 필수입니다.")
+        private LocalDate endDate;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class Update {
+        @Size(max = 50, message = "제목은 최대 50자 이하여야 합니다.")
+        private String title;
+
+        @Size(max = 255, message = "설명은 최대 255자 이하여야 합니다.")
+        private String description;
+
+        private String category;
+
+        private LocalDate startDate;
+
+        private LocalDate endDate;
+
+        public boolean isAllFieldsNull() {
+            return title == null && description == null
+                    && category == null && startDate == null && endDate == null;
+        }
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class Response {
+        private Long id;
+
+        private String title;
+
+        private String description;
+
+        private PerformanceCategory category;
+
+        @JsonFormat(pattern = "yyyy-MM-dd")
+        private LocalDate startDate;
+
+        @JsonFormat(pattern = "yyyy-MM-dd")
+        private LocalDate endDate;
+    }
+}

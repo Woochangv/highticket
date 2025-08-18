@@ -1,21 +1,17 @@
 package com.woochang.highticket.domain.performnace;
 
-import com.woochang.highticket.global.exception.BusinessException;
-import com.woochang.highticket.global.exception.ErrorCode;
+import com.woochang.highticket.global.common.EnumValue;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-import java.util.Arrays;
+@Getter
+@RequiredArgsConstructor
+public enum PerformanceCategory implements EnumValue {
+    CONCERT("CONCERT"),                // 콘서트
+    MUSICAL("MUSICAL"),                // 뮤지컬
+    PLAY("PLAY"),                   // 연극
+    FANMEETING("FANMEETING"),             // 팬미팅
+    ETC("ETC");                    // 기타
 
-public enum PerformanceCategory {
-    CONCERT,                // 콘서트
-    MUSICAL,                // 뮤지컬
-    PLAY,                   // 연극
-    FANMEETING,             // 팬미팅
-    ETC;                    // 기타
-
-    public static PerformanceCategory from(String value) {
-        return Arrays.stream(values())
-                .filter(e -> e.name().equalsIgnoreCase(value))
-                .findFirst()
-                .orElseThrow(() -> new BusinessException(ErrorCode.PERFORMANCE_CATEGORY_NOT_EXISTS));
-    }
+    private final String value;
 }

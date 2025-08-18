@@ -4,7 +4,6 @@ import com.woochang.highticket.domain.performnace.schedule.seat.PerformanceSched
 import com.woochang.highticket.domain.performnace.schedule.seat.SeatGrade;
 import com.woochang.highticket.domain.performnace.schedule.seat.SeatStatus;
 import com.woochang.highticket.global.exception.BusinessException;
-import com.woochang.highticket.global.exception.ErrorCode;
 import com.woochang.highticket.mapper.performance.schedule.seat.PerformanceScheduleSeatMapper;
 import com.woochang.highticket.repository.performance.schedule.seat.PerformanceScheduleSeatRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static com.woochang.highticket.dto.performance.schedule.seat.PerformanceScheduleSeatDto.Create;
 import static com.woochang.highticket.dto.performance.schedule.seat.PerformanceScheduleSeatDto.Update;
+import static com.woochang.highticket.global.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -30,26 +30,33 @@ public class PerformanceScheduleSeatService {
 
     public PerformanceScheduleSeat getSeat(Long id) {
         return seatRepository.findById(id).orElseThrow(() ->
-                new BusinessException(ErrorCode.PERFORMANCE_SCHEDULE_SEAT_NOT_FOUND));
+                new BusinessException(PERFORMANCE_SCHEDULE_SEAT_NOT_FOUND));
     }
 
     @Transactional
-    public PerformanceScheduleSeat updateSeat(Long id, Update request) {
+    public PerformanceScheduleSeat updateSeat(Long id, Update request) throws BusinessException {
         if (request.isAllFieldsNull()) {
-            throw new BusinessException(ErrorCode.PERFORMANCE_SCHEDULE_SEAT_UPDATE_REQUEST_INVALID);
+            throw new BusinessException(PERFORMANCE_SCHEDULE_SEAT_UPDATE_REQUEST_INVALID);
+        }
+
+        if (request.getSeatCode() != null && request.getSeatCode().isBlank()) {
+            throw new BusinessException(PERFORMANCE_SCHEDULE_SEAT_CODE_BLANK);
         }
 
         PerformanceScheduleSeat seat = getSeat(id);
 
-        String seatCode = seat.getSeatCode();
-        SeatGrade grade = seat.getGrade();
-        int price = seat.getPrice();
-        SeatStatus status = seat.getStatus();
+        String seatCode = resolveValue(request.getSeatCode(), seat.getSeatCode());
 
-        if(request.getSeatCode() != null) seatCode = request.getSeatCode();
-        if(request.getGrade() != null) grade = seatMapper.toSeatGrade(request.getGrade());
-        if(request.getPrice() != null) price = request.getPrice();
-        if(request.getStatus() != null) status = seatMapper.toSeatStatus(request.getStatus());
+        SeatGrade grade = request.getGrade() != null
+                ? seatMapper.toSeatGrade(request.getGrade())
+                : seat.getGrade();
+
+        int price = resolveValue(request.getPrice(), seat.getPrice());
+
+        SeatStatus status = request.getStatus() != null
+                ? seatMapper.toSeatStatus(request.getStatus())
+                : seat.getStatus();
+
 
         seat.updateWith(seatCode, grade, price, status);
 
@@ -59,5 +66,9 @@ public class PerformanceScheduleSeatService {
     @Transactional
     public void deleteSeat(Long id) {
         seatRepository.deleteById(id);
+    }
+
+    private <T> T resolveValue(T newValue, T currentValue) {
+        return newValue != null ? newValue : currentValue;
     }
 }
