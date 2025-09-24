@@ -8,14 +8,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
-import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
-import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -30,22 +27,30 @@ public class SecurityConfig {
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    public SecurityFilterChain securityWebFilterChain(HttpSecurity http) throws Exception {
         return http
-                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable) // Basic Auth 비활성화
-                .formLogin(ServerHttpSecurity.FormLoginSpec::disable) // Form 로그인 비활성화
-                .logout(ServerHttpSecurity.LogoutSpec::disable) // Logout 비활성화
-                .csrf(ServerHttpSecurity.CsrfSpec::disable) // CSRF 보호 비활성화
-                .authorizeExchange(exchanges -> {
-                    exchanges
-                            .pathMatchers("/", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/login/oauth2/**", "/oauth2/authorization/**").permitAll()
-                            .anyExchange().denyAll();
+                .httpBasic(AbstractHttpConfigurer::disable) // Basic Auth 비활성화
+                .formLogin(AbstractHttpConfigurer::disable) // Form 로그인 비활성화
+                .logout(AbstractHttpConfigurer::disable) // Logout 비활성화
+                .csrf(AbstractHttpConfigurer::disable) // CSRF 보호 비활성화
+                .authorizeHttpRequests(auth -> {
+                    auth
+                            .requestMatchers(
+                                    "/",
+                                    "/v3/api-docs/**",
+                                    "/swagger-ui.html", "/swagger-ui/**",
+                                    "/login/oauth2/**",
+                                    "/oauth2/authorization/**"
+                            )
+                            .permitAll()
+                            .anyRequest()
+                            .denyAll();
                 })
-                .oauth2Login(spec -> spec
-                        .authenticationSuccessHandler(oAuth2SuccessHandler)
+                .oauth2Login(config -> config
+                        .successHandler(oAuth2SuccessHandler)
                 ) // OAuth2 로그인 활성화
-                .addFilterAt(jwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)
-                .exceptionHandling(spec -> spec
+                .addFilterAt(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(config -> config
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                         .accessDeniedHandler(jwtAccessDeniedHandler)
                 )

@@ -1,7 +1,11 @@
 plugins {
     id 'java'
+
+    // Boot BOM 기반 의존성 버전 관리
     id 'org.springframework.boot' version '3.4.4'
     id 'io.spring.dependency-management' version '1.1.7'
+
+    // Spring REST Docs 문서 자동화
     id 'org.asciidoctor.jvm.convert' version '3.3.2'
 }
 
@@ -30,40 +34,29 @@ ext {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    //              == 메인 ==                //
+
+    // MVC Web Starter
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // JPA (MVC)
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // Spring Security
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
-    implementation 'org.springframework.kafka:spring-kafka'
+
+    // Lombok (컴파일 타임 전용)
     compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'io.projectreactor:reactor-test'
-    testImplementation 'org.springframework.batch:spring-batch-test'
-    testImplementation 'org.springframework.kafka:spring-kafka-test'
-    testImplementation 'org.springframework.restdocs:spring-restdocs-webtestclient'
-    testImplementation 'org.springframework.security:spring-security-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-    // springdoc-openapi 2.8.6 버전 추가
-    implementation 'org.springdoc:springdoc-openapi-starter-webflux-api:2.8.6'
-
 
     // OAuth2 Client
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
     // JJWT
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
-
-    // 테스트를 위한 H2 DB
-    testImplementation 'com.h2database:h2'
-
-    // Servlet API
-    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 
     // MapStruct
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
@@ -72,8 +65,44 @@ dependencies {
     // Validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+    // OpenAPI 문서 자동화 + Swagger UI (MVC, 최신: 2.8.11)
+    implementation ('org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.11') {
+        exclude group: 'org.apache.commons', module: 'commons-lang3'
+    }
+    implementation 'org.apache.commons:commons-lang3:3.18.0'
+
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.11'
+
+    //              == 런타임 ==                //
+
+    // Postgres JDBC Driver
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // JJWT
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+    //              == 테스트 ==                //
+
+    // JUnit/Jupiter + Spring Test 통합
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // H2 DB
+    testImplementation 'com.h2database:h2'
+
+    // REST Docs (MVC)
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+
+    // Security Test
+    testImplementation 'org.springframework.security:spring-security-test'
+
+    // IDE/Gradle 런처용
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
     // Mockito inline mock용 에이전트 (테스트 전용)
+    // (JDK 최신에서 동적 self-attach 경고 제거 향후 차단 대비)
     byteBuddyAgent 'net.bytebuddy:byte-buddy-agent:1.15.11'
+
 }
 
 tasks.named('test') {
