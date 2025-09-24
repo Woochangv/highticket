@@ -1,29 +1,28 @@
 package com.woochang.highticket.global.security.jwt;
 
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.server.reactive.ServerHttpResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.woochang.highticket.global.util.HttpResponseWriters;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Mono;
 
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
+
+import static com.woochang.highticket.global.exception.ErrorCode.AUTH_UNAUTHORIZED;
+import static com.woochang.highticket.global.response.ApiResponse.error;
 
 @Component
-public class JwtAuthenticationEntryPoint implements ServerAuthenticationEntryPoint {
+@RequiredArgsConstructor
+public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
+
+    private final ObjectMapper objectMapper;
 
     @Override
-    public Mono<Void> commence(ServerWebExchange exchange, AuthenticationException ex) {
-        ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(HttpStatus.UNAUTHORIZED);
-        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-
-        byte[] bytes = "{\"message\": \"인증이 필요합니다.\"}".getBytes(StandardCharsets.UTF_8);
-        DataBuffer buffer = response.bufferFactory().wrap(bytes);
-
-        return response.writeWith(Mono.just(buffer));
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+        HttpResponseWriters.writeJson(response, AUTH_UNAUTHORIZED.getStatus(), error(AUTH_UNAUTHORIZED), objectMapper);
     }
 }
