@@ -10,13 +10,15 @@ public enum ErrorCode {
     // 4xx 클라이언트 오류
     COMMON_INVALID_INPUT(HttpStatus.BAD_REQUEST, "COMMON_INVALID_INPUT", "잘못된 입력입니다."),
     COMMON_VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "COMMON_VALIDATION_FAILED", "입력값 검증에 실패했습니다."),
+    COMMON_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON_NOT_FOUND", "리소스를 찾을 수 없습니다."),
 
-    AUTH_AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "AUTH_AUTHENTICATION_FAILED", "인증에 실패했습니다."),
-    AUTH_REQUIRED_PERMISSION(HttpStatus.UNAUTHORIZED, "AUTH_REQUIRED_PERMISSION", "권한이 필요합니다."),
+    // AUTH 관련
+    AUTH_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH_UNAUTHORIZED", "인증이 필요합니다."),
     AUTH_INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH_INVALID_TOKEN", "유효하지 않은 토큰입니다."),
     AUTH_REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH_REFRESH_TOKEN_EXPIRED", "Refresh Token이 만료되어 재인증이 필요합니다."),
+    AUTH_ACCESS_DENIED(HttpStatus.FORBIDDEN, "AUTH_ACCESS_DENIED", "권한이 부족합니다."),
 
-    COMMON_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON_NOT_FOUND", "리소스를 찾을 수 없습니다."),
+    // VENUE 관련
     VENUE_NOT_FOUND(HttpStatus.NOT_FOUND, "VENUE_NOT_FOUND", "해당 ID에 해당하는 행사장을 찾을 수 없습니다."),
 
     // PERFORMANCE 관련

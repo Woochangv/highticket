@@ -8,13 +8,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
-import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
-import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.core.convert.support.ConfigurableConversionService;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableWebFluxSecurity
+@EnableWebSecurity
 @Profile("dev")
 @RequiredArgsConstructor
 public class SecurityConfigDev {
@@ -25,32 +28,33 @@ public class SecurityConfigDev {
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    public SecurityFilterChain securityWebFilterChain(HttpSecurity http, ConfigurableConversionService configurableConversionService) throws Exception {
         return http
-                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable) // Basic Auth 비활성화
-                .formLogin(ServerHttpSecurity.FormLoginSpec::disable) // Form 로그인 비활성화
-                .logout(ServerHttpSecurity.LogoutSpec::disable) // Logout 비활성화
-                .csrf(ServerHttpSecurity.CsrfSpec::disable) // CSRF 보호 비활성화
-                .authorizeExchange(exchanges -> {
-                    exchanges
-                            .pathMatchers("/",
+                .httpBasic(AbstractHttpConfigurer::disable) // Basic Auth 비활성화
+                .formLogin(AbstractHttpConfigurer::disable) // Form 로그인 비활성화
+                .logout(AbstractHttpConfigurer::disable) // Logout 비활성화
+                .csrf(AbstractHttpConfigurer::disable) // CSRF 보호 비활성화
+                .authorizeHttpRequests(auth -> {
+                    auth
+                            .requestMatchers(
+                                    "/",
                                     "/v3/api-docs/**",
                                     "/swagger-ui.html",
                                     "/swagger-ui/**",
                                     "/login/oauth2/**",
                                     "/oauth2/authorization/**",
                                     "/venues/**",
-                                    "/performances/**",
                                     "/performance-schedules/**",
                                     "/performance-schedule-seats/**"
                                     ).permitAll()
-                            .anyExchange().denyAll();
+                            .requestMatchers(HttpMethod.POST, "/performances/**").hasRole("USER")
+                            .anyRequest().denyAll();
                 })
-                .oauth2Login(spec -> spec
-                        .authenticationSuccessHandler(oAuth2SuccessHandler)
+                .oauth2Login(config -> config
+                        .successHandler(oAuth2SuccessHandler)
                 ) // OAuth2 로그인 활성화
-                .addFilterAt(jwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)
-                .exceptionHandling(spec -> spec
+                .addFilterAt(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(config -> config
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                         .accessDeniedHandler(jwtAccessDeniedHandler)
                 )
