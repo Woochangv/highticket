@@ -1,12 +1,15 @@
 package com.woochang.highticket.controller.performance.schedule;
 
 import com.woochang.highticket.domain.performnace.schedule.PerformanceSchedule;
+import com.woochang.highticket.domain.performnace.schedule.PerformanceScheduleStatus;
 import com.woochang.highticket.global.response.ApiResponse;
-import com.woochang.highticket.global.response.SuccessCode;
+import com.woochang.highticket.global.response.ResponseEntitySupport;
 import com.woochang.highticket.mapper.performance.schedule.PerformanceScheduleMapper;
 import com.woochang.highticket.service.performance.schedule.PerformanceScheduleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +17,7 @@ import static com.woochang.highticket.dto.performance.schedule.PerformanceSchedu
 import static com.woochang.highticket.global.response.SuccessCode.*;
 
 @RestController
-@RequestMapping("/performance-schedules")
+@RequestMapping("/performances/{performanceId}/schedules")
 @RequiredArgsConstructor
 public class PerformanceScheduleController {
 
@@ -22,36 +25,38 @@ public class PerformanceScheduleController {
     private final PerformanceScheduleMapper scheduleMapper;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Response>> create(@RequestBody @Valid Create request) {
-        PerformanceSchedule schedule = scheduleService.createSchedule(request);
+    public ResponseEntity<ApiResponse<Response>> create(@PathVariable Long performanceId, @RequestBody @Valid Create request) {
+        PerformanceSchedule schedule = scheduleService.createSchedule(performanceId, request);
         Response response = scheduleMapper.toResponse(schedule);
-        return buildResponse(PERFORMANCE_SCHEDULE_CREATED, response);
+        return ResponseEntitySupport.of(PERFORMANCE_SCHEDULE_CREATED, response);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Response>> getSchedule(@PathVariable Long id) {
-        PerformanceSchedule schedule = scheduleService.getSchedule(id);
+    @GetMapping("/{scheduleId}")
+    public ResponseEntity<ApiResponse<Response>> getSchedule(@PathVariable Long scheduleId) {
+        PerformanceSchedule schedule = scheduleService.getSchedule(scheduleId);
         Response response = scheduleMapper.toResponse(schedule);
-        return buildResponse(OK, response);
+        return ResponseEntitySupport.of(OK, response);
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<Response>> update(@PathVariable Long id, @RequestBody @Valid Update request) {
-        PerformanceSchedule schedule = scheduleService.updateSchedule(id, request);
+    @GetMapping
+    public ResponseEntity<ApiResponse<Page<Response>>> getSchedules(@PathVariable Long performanceId, @RequestParam(required = false) PerformanceScheduleStatus status, Pageable pageable) {
+        Page<PerformanceSchedule> schedules = scheduleService.getSchedules(performanceId, status, pageable);
+        Page<Response> response = schedules.map(scheduleMapper::toResponse);
+        return ResponseEntitySupport.of(OK, response);
+    }
+
+
+
+    @PatchMapping("/{scheduleId}")
+    public ResponseEntity<ApiResponse<Response>> update(@PathVariable Long scheduleId, @RequestBody @Valid Update request) {
+        PerformanceSchedule schedule = scheduleService.updateSchedule(scheduleId, request);
         Response response = scheduleMapper.toResponse(schedule);
-        return buildResponse(PERFORMANCE_SCHEDULE_UPDATED, response);
+        return ResponseEntitySupport.of(PERFORMANCE_SCHEDULE_UPDATED, response);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
-        scheduleService.deleteSchedule(id);
-        return ResponseEntity
-                .status(PERFORMANCE_SCHEDULE_DELETED.getStatus())
-                .body(ApiResponse.success(PERFORMANCE_SCHEDULE_DELETED));
-    }
-
-    private ResponseEntity<ApiResponse<Response>> buildResponse(SuccessCode successCode, Response response) {
-        return ResponseEntity.status(successCode.getStatus())
-                .body(ApiResponse.success(successCode, response));
+    @DeleteMapping("/{scheduleId}")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long scheduleId) {
+        scheduleService.deleteSchedule(scheduleId);
+        return ResponseEntitySupport.of(PERFORMANCE_SCHEDULE_DELETED);
     }
 }

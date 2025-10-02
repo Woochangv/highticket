@@ -30,23 +30,23 @@ public class PerformanceController {
         return buildResponse(PERFORMANCE_CREATED, response);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Response>> getPerformance(@PathVariable Long id) {
-        Performance performance = performanceService.getPerformance(id);
+    @GetMapping("/{performanceId}")
+    public ResponseEntity<ApiResponse<Response>> getPerformance(@PathVariable Long performanceId) {
+        Performance performance = performanceService.getPerformance(performanceId);
         Response response = performanceMapper.toResponse(performance);
         return buildResponse(OK, response);
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<ApiResponse<Response>> update(@PathVariable Long id, @RequestBody @Valid Update request) {
-        Performance performance = performanceService.updatePerformance(id, request);
+    @PatchMapping("/{performanceId}")
+    public ResponseEntity<ApiResponse<Response>> update(@PathVariable Long performanceId, @RequestBody @Valid Update request) {
+        Performance performance = performanceService.updatePerformance(performanceId, request);
         Response response = performanceMapper.toResponse(performance);
         return buildResponse(PERFORMANCE_UPDATED, response);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
-        performanceService.deletePerformance(id);
+    @DeleteMapping("/{performanceId}")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long performanceId) {
+        performanceService.deletePerformance(performanceId);
         return ResponseEntity
                 .status(PERFORMANCE_DELETED.getStatus())
                 .body(ApiResponse.success(PERFORMANCE_DELETED));
