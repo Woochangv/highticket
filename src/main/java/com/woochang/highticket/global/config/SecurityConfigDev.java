@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.convert.support.ConfigurableConversionService;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -44,10 +43,9 @@ public class SecurityConfigDev {
                                     "/login/oauth2/**",
                                     "/oauth2/authorization/**",
                                     "/venues/**",
-                                    "/performance-schedules/**",
+                                    "/performances/**",
                                     "/performance-schedule-seats/**"
-                                    ).permitAll()
-                            .requestMatchers(HttpMethod.POST, "/performances/**").hasRole("USER")
+                            ).permitAll()
                             .anyRequest().denyAll();
                 })
                 .oauth2Login(config -> config

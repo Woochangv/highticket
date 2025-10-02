@@ -1,10 +1,12 @@
 package com.woochang.highticket.domain.performnace.schedule;
 
 import com.woochang.highticket.domain.BaseTimeEntity;
+import com.woochang.highticket.domain.performnace.Performance;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -31,6 +33,10 @@ public class PerformanceSchedule extends BaseTimeEntity {
     @Column(length = 10, nullable = false)
     private PerformanceScheduleStatus status;
 
+    @ManyToOne
+    @JoinColumn(name = "performance_id", nullable = false)
+    private Performance performance;
+
     public PerformanceSchedule(LocalDateTime startDatetime, LocalDateTime ticketOpenAt, int ticketLimit, PerformanceScheduleStatus status) {
         this.startDatetime = startDatetime;
         this.ticketOpenAt = ticketOpenAt;
@@ -45,4 +51,7 @@ public class PerformanceSchedule extends BaseTimeEntity {
         this.status = status;
     }
 
+    public void setPerformance(Performance performance) {
+        this.performance = performance;
+    }
 }

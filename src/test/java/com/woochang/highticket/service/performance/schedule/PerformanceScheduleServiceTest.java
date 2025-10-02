@@ -1,8 +1,11 @@
 package com.woochang.highticket.service.performance.schedule;
 
+import com.woochang.highticket.domain.performnace.Performance;
+import com.woochang.highticket.domain.performnace.PerformanceCategory;
 import com.woochang.highticket.domain.performnace.schedule.PerformanceSchedule;
 import com.woochang.highticket.global.exception.BusinessException;
 import com.woochang.highticket.mapper.performance.schedule.PerformanceScheduleMapper;
+import com.woochang.highticket.repository.performance.PerformanceRepository;
 import com.woochang.highticket.repository.performance.schedule.PerformanceScheduleRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
@@ -37,6 +41,7 @@ class PerformanceScheduleServiceTest {
     private static final int TICKET_LIMIT = 10000;
     private static final String STATUS = "UPCOMING";
     private static final LocalDateTime INVALID_START_DATETIME = LocalDateTime.of(2025, 5, 1, 18, 30);
+    private static final Long PERFORMANCE_ID = 1L;
 
     @InjectMocks
     private PerformanceScheduleService scheduleService;
@@ -44,6 +49,8 @@ class PerformanceScheduleServiceTest {
     private PerformanceScheduleRepository scheduleRepository;
     @Mock
     private PerformanceScheduleMapper scheduleMapper;
+    @Mock
+    private PerformanceRepository performanceRepository;
 
     private static Stream<String> invalidValues() {
         return Stream.of("INVALID", null);
@@ -53,6 +60,7 @@ class PerformanceScheduleServiceTest {
     @DisplayName("공연 일정이 정상적으로 생성된다")
     public void create_success() {
         // given
+        Performance performance = basePerformance();
         Create request = baseCreate();
 
         PerformanceSchedule schedule = new PerformanceSchedule(
@@ -60,15 +68,17 @@ class PerformanceScheduleServiceTest {
                 request.getTicketLimit(), UPCOMING
         );
 
+        when(performanceRepository.findById(PERFORMANCE_ID)).thenReturn(Optional.of(performance));
         when(scheduleMapper.toEntity(request)).thenReturn(schedule);
         when(scheduleRepository.save(schedule)).thenReturn(schedule);
 
         // when
-        PerformanceSchedule result = scheduleService.createSchedule(request);
+        PerformanceSchedule result = scheduleService.createSchedule(PERFORMANCE_ID, request);
 
         // then
-        verify(scheduleMapper).toEntity(request);
-        verify(scheduleRepository).save(schedule);
+        verify(performanceRepository).findById(any());
+        verify(scheduleMapper).toEntity(any());
+        verify(scheduleRepository).save(any());
         assertThat(result.getStartDatetime()).isEqualTo(request.getStartDatetime());
         assertThat(result.getTicketOpenAt()).isEqualTo(request.getTicketOpenAt());
         assertThat(result.getTicketLimit()).isEqualTo(request.getTicketLimit());
@@ -79,6 +89,7 @@ class PerformanceScheduleServiceTest {
     @DisplayName("예매 시작 시각이 공연 시작 시각보다 이후이면 예외가 발생한다")
     public void create_invalidDatetime_throwsException() {
         // given
+        Performance performance = basePerformance();
         Create request = baseCreate();
         request.setStartDatetime(INVALID_START_DATETIME);
 
@@ -87,13 +98,16 @@ class PerformanceScheduleServiceTest {
                 request.getTicketLimit(), UPCOMING
         );
 
+        when(performanceRepository.findById(PERFORMANCE_ID)).thenReturn(Optional.of(performance));
         when(scheduleMapper.toEntity(request)).thenReturn(schedule);
 
         // when & then
         assertBusinessError(
-                () -> scheduleService.createSchedule(request),
+                () -> scheduleService.createSchedule(PERFORMANCE_ID, request),
                 PERFORMANCE_SCHEDULE_DATETIME_INVALID
         );
+        verify(performanceRepository).findById(any());
+        verify(performanceRepository).findById(any());
         verify(scheduleRepository, never()).save(any());
     }
 
@@ -102,17 +116,35 @@ class PerformanceScheduleServiceTest {
     @MethodSource("invalidValues")
     public void create_rejects_invalidStatus(String status) {
         // given
+        Performance performance = basePerformance();
         Create request = baseCreate();
         request.setStatus(status);
 
+        when(performanceRepository.findById(PERFORMANCE_ID)).thenReturn(Optional.of(performance));
         when(scheduleMapper.toEntity(argThat(req -> Objects.equals(req.getStatus(), status))))
                 .thenThrow(new BusinessException(INVALID_ENUM_VALUE));
 
         // when & then
         assertBusinessError(
-                () -> scheduleService.createSchedule(request),
+                () -> scheduleService.createSchedule(PERFORMANCE_ID, request),
                 INVALID_ENUM_VALUE
         );
+        verify(scheduleRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("공연 일정 생성 시 공연이 존재하지 않으면 예외가 발생한다")
+    public void create_notFoundPerformance_throwsException() {
+        // given
+        Create request = baseCreate();
+        when(performanceRepository.findById(PERFORMANCE_ID)).thenReturn(Optional.empty());
+
+        // when & then
+        assertBusinessError(
+                () -> scheduleService.createSchedule(PERFORMANCE_ID, request),
+                PERFORMANCE_NOT_FOUND
+        );
+        verify(performanceRepository).findById(any());
         verify(scheduleRepository, never()).save(any());
     }
 
@@ -281,5 +313,14 @@ class PerformanceScheduleServiceTest {
 
     private PerformanceSchedule baseSchedule() {
         return new PerformanceSchedule(START_DATETIME, TICKET_OPEN_AT, TICKET_LIMIT, UPCOMING);
+    }
+
+    private Performance basePerformance() {
+        String title = "제목";
+        String description = "내용";
+        PerformanceCategory category = PerformanceCategory.CONCERT;
+        LocalDate startDate = LocalDate.of(2025, 7, 1);
+        LocalDate endDate = LocalDate.of(2025, 8, 1);
+        return new Performance(title, description, category, startDate, endDate);
     }
 }
